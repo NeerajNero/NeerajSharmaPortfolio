@@ -52,9 +52,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <footer className="border-t border-line">
-          <div className="mx-auto max-w-[1040px] px-6 py-6 text-[13px] text-muted">
-            {/* footer content arrives in phase 3 */}
-          </div>
+          <p className="mx-auto flex max-w-[1040px] flex-wrap gap-x-5 gap-y-1 px-6 py-6 text-[13px] text-muted">
+            <span>
+              © {site.footer.year} {site.identity.displayName}
+            </span>
+            <span>built with {site.footer.builtWith}</span>
+            <a href={site.links.sourceRepo} rel="noopener">
+              source on GitHub
+            </a>
+          </p>
         </footer>
         <Konami />
         <CrtOverlay />

@@ -3,6 +3,27 @@
 import { useEffect, useState } from "react";
 import { site } from "@/config/site";
 
+/** Where a section's top lands after an anchor scroll; matches scroll-margin-top in globals.css. */
+const NAV_LINE_PX = 72;
+/** Upper bound for a smooth anchor scroll to finish. */
+const SETTLE_MS = 700;
+
+/**
+ * The active section is the last one whose top has crossed the nav line.
+ * At the very bottom of the page the last section wins, since short trailing
+ * sections can never reach the line on their own.
+ */
+function pickActive(sections: HTMLElement[]): string {
+  const doc = document.documentElement;
+  const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 2;
+  if (atBottom) return sections[sections.length - 1].id;
+  let current = sections[0].id;
+  for (const section of sections) {
+    if (section.getBoundingClientRect().top <= NAV_LINE_PX + 1) current = section.id;
+  }
+  return current;
+}
+
 export function Nav() {
   const [active, setActive] = useState<string>(site.nav[0]?.id ?? "");
 
@@ -12,25 +33,33 @@ export function Nav() {
       .filter((el): el is HTMLElement => el !== null);
     if (sections.length === 0) return;
 
-    const visible = new Map<string, number>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            visible.set(entry.target.id, entry.intersectionRatio);
-          } else {
-            visible.delete(entry.target.id);
-          }
-        }
-        // Pick the first visible section in document order.
-        const next = site.nav.find((item) => visible.has(item.id));
-        if (next) setActive(next.id);
-      },
-      { rootMargin: "-72px 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] },
-    );
-
+    const update = () => setActive(pickActive(sections));
+    const observer = new IntersectionObserver(update, {
+      rootMargin: `-${NAV_LINE_PX}px 0px 0px 0px`,
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+    });
     for (const section of sections) observer.observe(section);
-    return () => observer.disconnect();
+
+    // The observer's last callback can land mid smooth-scroll; re-check once
+    // the scroll settles (scrollend) and, for browsers without it, after a
+    // fixed delay following an anchor jump.
+    let settle: number | undefined;
+    const onHashChange = () => {
+      update();
+      window.clearTimeout(settle);
+      settle = window.setTimeout(update, SETTLE_MS);
+    };
+    window.addEventListener("scrollend", update);
+    window.addEventListener("hashchange", onHashChange);
+    const raf = requestAnimationFrame(update);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scrollend", update);
+      window.removeEventListener("hashchange", onHashChange);
+      window.clearTimeout(settle);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (

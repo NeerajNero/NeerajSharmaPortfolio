@@ -118,7 +118,7 @@ export const site: SiteConfig = {
       "loading player profile ......... ok",
       "mounting quest log ............. ok",
       "syncing trophy case ............ ok",
-      "press any key",
+      "ready",
     ],
   },
 

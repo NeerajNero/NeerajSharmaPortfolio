@@ -1,14 +1,10 @@
 import { BootSequence } from "@/components/boot-sequence";
+import { Campaign } from "@/components/campaign";
+import { Loadout } from "@/components/loadout";
 import { PlayerCard } from "@/components/player-card";
+import { QuestLog } from "@/components/quest-log";
 import { SectionHeader } from "@/components/section-header";
-
-const sections = [
-  { id: "loadout", title: "Loadout" },
-  { id: "quests", title: "Quest log" },
-  { id: "campaign", title: "Campaign" },
-  { id: "arcade", title: "Arcade" },
-  { id: "ping", title: "Send ping" },
-] as const;
+import { SendPing } from "@/components/send-ping";
 
 export default function Home() {
   return (
@@ -18,15 +14,30 @@ export default function Home() {
         <section id="player" aria-labelledby="player-name">
           <PlayerCard />
         </section>
-        {sections.map((section) => (
-          <section
-            key={section.id}
-            id={section.id}
-            aria-labelledby={`${section.id}-title`}
-          >
-            <SectionHeader id={section.id} title={section.title} />
-          </section>
-        ))}
+
+        <section id="loadout" aria-labelledby="loadout-title">
+          <SectionHeader id="loadout" title="Loadout" />
+          <Loadout />
+        </section>
+
+        <section id="quests" aria-labelledby="quests-title">
+          <SectionHeader id="quests" title="Quest log" />
+          <QuestLog />
+        </section>
+
+        <section id="campaign" aria-labelledby="campaign-title">
+          <SectionHeader id="campaign" title="Campaign" />
+          <Campaign />
+        </section>
+
+        <section id="arcade" aria-labelledby="arcade-title">
+          <SectionHeader id="arcade" title="Arcade" />
+        </section>
+
+        <section id="ping" aria-labelledby="ping-title">
+          <SectionHeader id="ping" title="Send ping" />
+          <SendPing />
+        </section>
       </div>
     </>
   );
