@@ -104,8 +104,6 @@ export async function getSteamStats(): Promise<PlatformStats> {
       : undefined;
   const handle = asString(player?.personaname);
   if (!handle) throw new ShapeError("GetPlayerSummaries returned no personaname");
-  const rawNowPlaying = asString(player?.gameextrainfo);
-  const nowPlaying = rawNowPlaying ? cleanName(rawNowPlaying) : undefined;
 
   const owned = new Map<number, OwnedGame>();
   for (const game of readGames(ownedBody)) {
@@ -153,12 +151,10 @@ export async function getSteamStats(): Promise<PlatformStats> {
     { label: "hours", value: formatCount(hours) },
     { label: "games", value: formatCount(gameCount) },
   ];
-  if (nowPlaying) headline.push({ label: "now playing", value: nowPlaying });
 
   return assertUsable({
       id: "steam",
       handle,
-      nowPlaying,
       headline,
       recent,
     source: "live",

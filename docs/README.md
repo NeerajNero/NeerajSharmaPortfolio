@@ -1,6 +1,6 @@
 # Docs index
 
-neerajnero.com is a one-page developer portfolio for Neeraj Sharma, built as a "player profile": a dark, mono-spaced page with one acid-green accent. It renders résumé content from a single typed config file, lists GitHub repositories, and shows a live trophy case pulled from Steam, Xbox (via OpenXBL) and PlayStation (via psn-api), each falling back to a hand-filled snapshot when a key is missing or an API fails. It is a Next.js 16 App Router site on Vercel with Cache Components enabled; the home page is a static shell whose cached data revalidates hourly.
+neerajnero.com is a one-page developer portfolio for Neeraj Sharma, built as a "player profile": a dark, mono-spaced page with one acid-green accent. It renders résumé content from a single typed config file, lists GitHub repositories, and shows a live trophy case pulled from Steam, Xbox (via OpenXBL) and PlayStation (via psn-api), each falling back to a hand-filled snapshot when a key is missing or an API fails. It is a Next.js 16 App Router site on Vercel with Cache Components enabled; the home page is a static shell whose cached data revalidates daily, or on demand through a secret-guarded route.
 
 ## Where to look
 

@@ -12,7 +12,7 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript strict · Ta
 
 ## How the arcade works
 
-Three server-side adapters, one per platform, each cached for an hour with `"use cache"`. Steam uses the Web API, Xbox goes through OpenXBL, PlayStation through `psn-api`. Each adapter validates the response shape and throws on anything empty, and a single wrapper logs one redacted warning and falls back to a hand-filled snapshot from `src/config/site.ts`. The site builds and renders with no keys at all; cards then show a small "snapshot" label instead of "live HH:MM IST". Keys never appear in logs, warnings or the debug route.
+Three server-side adapters, one per platform, each cached for a day with `"use cache"` and refreshable on demand through a secret-guarded route. Steam uses the Web API, Xbox goes through OpenXBL, PlayStation through `psn-api`. Each adapter validates the response shape and throws on anything empty, and a single wrapper logs one redacted warning and falls back to a hand-filled snapshot from `src/config/site.ts`. The site builds and renders with no keys at all; cards then show a small "snapshot" label instead of "live HH:MM IST". Keys never appear in logs, warnings or the debug route.
 
 ## Local setup
 

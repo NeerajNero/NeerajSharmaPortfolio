@@ -70,7 +70,7 @@ Interpretations already made: the player section has an `h1` and no HUD tab; the
 
 1. title row (`h3` platform name, source label right)
 2. handle
-3. stats block (optional "now playing", `dl` with a 140px label column, optional tier dots)
+3. stats block (`dl` with a 140px label column, optional tier dots)
 4. game list (`ul` with `border-t`, up to `RECENT_SHOWN` = 3 rows of 48px thumbnail, truncated name, meta line "progress  date  tag")
 
 Because the four children are subgrid items, row 3 takes the tallest card's height and every list divider starts at the same y. Every child and the article carry `min-w-0`; without it, non-wrapping game names widen the grid track and spill past the card.
@@ -108,5 +108,5 @@ No motion library. Every animation checks `prefers-reduced-motion` (the global C
 
 The server always renders the final state (the real number, the full bar), so no-JS visitors and crawlers see the data. Counters reserve their width with `tabular-nums` and a `min-width` in `ch`. XP bars only render when the row has a progress value, and are muted when the card is a snapshot.
 
-Note on the skeleton: with the current caching model the home page is prerendered with the arcade data in it, so the skeleton is never shown on a normal request; see [architecture.md](architecture.md#caching-model).
+Note on the skeleton: with the current caching model the home page is prerendered with the arcade data in it, so the skeleton is never shown on a normal request; see [architecture.md](architecture.md#caching-model). Its reserved heights match the real block in every case now that Steam has no "now playing" line: 553 px at 1280 and 1566 px at 375 for both.
 

@@ -22,6 +22,8 @@ export const env = {
   steamId64: read("STEAM_ID64"),
   openXblApiKey: read("OPENXBL_API_KEY"),
   psnNpsso: read("PSN_NPSSO"),
+  /** Shared secret for POST /api/revalidate. Unset disables the route (404). */
+  revalidateSecret: read("REVALIDATE_SECRET"),
 } as const;
 
 export type Env = typeof env;

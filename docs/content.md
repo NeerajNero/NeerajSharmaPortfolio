@@ -31,7 +31,7 @@ All copy, links, lists and snapshot numbers live in `src/config/site.ts` as one 
 | `sideQuests.endpoint` | `string` | GitHub repos API URL |
 | `sideQuests.exclude` | `string[]` | repo names never shown |
 | `sideQuests.limit` | `number` | `8` |
-| `sideQuests.revalidate` | `number` | `3600`, documentary; the real lifetime is `cacheLife("hours")` |
+| `sideQuests.revalidate` | `number` | `3600`, documentary; the real lifetime is `cacheLife("days")` |
 | `gaming.static` | `Record<PlatformId, PlatformStats>` | one snapshot per platform, see below |
 | `gaming.labels` | `Record<PlatformId, { name, aggregate }>` | `{ name: "PlayStation", aggregate: "PSN platinums" }` |
 | `gaming.revalidate` | `number` | `3600`, documentary |

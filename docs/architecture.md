@@ -30,6 +30,7 @@ src/app/
   robots.ts, sitemap.ts metadata routes (/ and /resume)
   resume/page.tsx       résumé from site.ts, build-time check for public/resume.pdf
   api/trophy-case/route.ts  dev-only JSON of getTrophyCase(); 404 in production
+  api/revalidate/route.ts   POST with x-revalidate-secret: marks the arcade and github tags stale
   fonts/                PressStart2P-Regular.ttf, JetBrainsMono-Regular.ttf + OFL licences
 src/components/
   boot-sequence.tsx     client: typed boot overlay, once per session
@@ -48,7 +49,7 @@ src/config/site.ts      all content, typed as SiteConfig
 src/lib/
   env.ts                undefined-safe reads of every env var
   crt.ts                CRT toggle helpers + the pre-paint inline script string
-  github.ts             getSideQuests(), cached hourly
+  github.ts             getSideQuests(), cached daily under the "github" tag
   gaming/types.ts       GameEntry, PlatformStats, Aggregate, PlatformId
   gaming/index.ts       getTrophyCase(): cached wrappers, allSettled, aggregate
   gaming/steam.ts, xbox.ts, psn.ts   adapters
@@ -62,8 +63,8 @@ docs/                   these documents; spec.md is the frozen build spec
 
 ## Request flow for `/`
 
-1. `next build` prerenders `/` as a static shell. During that render `QuestLog` awaits `getSideQuests()` and `TrophyCase` awaits `getTrophyCase()`; both are `"use cache"` functions, so their results are baked into the shell with a one-hour lifetime. Whatever env vars exist at build time decide whether the baked data is live or snapshot.
-2. A request is served the shell from Vercel's cache. After one hour, the next request triggers a background revalidation that re-runs the cached functions with the runtime env; after one day without requests the next one waits for fresh data.
+1. `next build` prerenders `/` as a static shell. During that render `QuestLog` awaits `getSideQuests()` and `TrophyCase` awaits `getTrophyCase()`; both are `"use cache"` functions, so their results are baked into the shell with a one-day lifetime. Whatever env vars exist at build time decide whether the baked data is live or snapshot.
+2. A request is served the shell from Vercel's cache. After one day, or after `POST /api/revalidate`, the next request triggers a background revalidation that re-runs the cached functions with the runtime env; after a week without requests the next one waits for fresh data.
 3. In the browser, an inline script in `<head>` (`PRE_PAINT_SCRIPT` from `src/lib/crt.ts`) runs before paint: it sets `data-crt="on"` on `<html>` if `localStorage.crt === "on"` and `data-boot="done"` if `sessionStorage.boot === "1"`. CSS in `globals.css` uses those attributes to show scanlines or hide the boot overlay without a flash.
 4. `BootSequence` hydrates on top of the already-rendered content, plays or skips, and unmounts. `Nav` attaches an `IntersectionObserver` to the six sections.
 
@@ -77,8 +78,9 @@ docs/                   these documents; spec.md is the frozen build spec
 
 ## Caching model
 
-- Profile: every cached function calls `cacheLife("hours")`, which is stale 5 min (client router), revalidate 1 hour, expire 1 day. The build output prints `/` as `Revalidate 1h, Expire 1d`.
-- Cached functions: `getSideQuests()` in `src/lib/github.ts`; `cachedSteam`, `cachedXbox`, `cachedPsn` in `src/lib/gaming/index.ts`. Each catches inside the cached scope, so a failure caches the fallback (empty list or snapshot) for the same hour and retries after. A failure is therefore never baked in until the next deploy.
+- Profile: every cached function calls `cacheLife("days")`, which is stale 5 min (client router), revalidate 1 day, expire 1 week. The build output prints `/` as `Revalidate 1d, Expire 1w`.
+- Tags: the three gaming caches are tagged `arcade`, the GitHub cache `github`. `POST /api/revalidate` calls `revalidateTag(tag, "max")` on both, marking them stale so the next visit refreshes in the background.
+- Cached functions: `getSideQuests()` in `src/lib/github.ts`; `cachedSteam`, `cachedXbox`, `cachedPsn` in `src/lib/gaming/index.ts`. Each catches inside the cached scope, so a failure caches the fallback (empty list or snapshot) for the same day and retries after, or sooner after a manual revalidate. A failure is therefore never baked in until the next deploy.
 - `/api/trophy-case` calls `await connection()` so it always renders at request time, then returns 404 when `NODE_ENV === "production"`. In `next dev` it returns `getTrophyCase()` as JSON so keys can be verified without the UI. It never includes env values.
 - `/opengraph-image` is dynamic because it reads font files with `fs.readFile`; `outputFileTracingIncludes` guarantees the files are in its function bundle.
 - `/resume` is static; the "Download PDF" link depends on `existsSync("public/resume.pdf")` evaluated at build.

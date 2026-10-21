@@ -44,4 +44,4 @@ The full documentation index is imported below; read the doc that matches the ta
 
 - Next rewrites `AGENTS.md` on `next dev`; leave it alone. This file is the operating guide, not `AGENTS.md`.
 - `/api/trophy-case` is dev-only and returns 404 in production. It never includes env values.
-- The home page is a static shell with a one-hour revalidate; a failure in a cached function is cached as the fallback for the same hour and retried after.
+- The home page is a static shell with a one-day revalidate (tags `arcade` and `github`, refreshable via `POST /api/revalidate`); a failure in a cached function is cached as the fallback for the same day and retried after.

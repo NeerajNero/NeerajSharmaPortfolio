@@ -18,7 +18,7 @@ const TIER_DOT: Record<string, string> = {
 export function PlatformCard({ stats }: { stats: PlatformStats }) {
   const label = site.gaming.labels[stats.id];
   const tiers = stats.headline.filter((h) => h.label in TIER_DOT);
-  const pairs = stats.headline.filter((h) => !(h.label in TIER_DOT) && h.label !== "now playing");
+  const pairs = stats.headline.filter((h) => !(h.label in TIER_DOT));
 
   /* Exactly four children: title, handle, stats, list. On desktop the card is
      a row-subgrid of the trophy-case grid, so each child lands in the same
@@ -33,12 +33,6 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
       <p className="min-w-0 truncate text-[13px] text-muted">{stats.handle}</p>
 
       <div className="flex min-w-0 flex-col gap-3 text-[13px]">
-        {stats.nowPlaying ? (
-          <p>
-            <span className="text-muted">now playing </span>
-            {stats.nowPlaying}
-          </p>
-        ) : null}
         <dl className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-1">
           {pairs.map((pair) => (
             <div key={pair.label} className="contents">

@@ -17,11 +17,21 @@ const dateParts = new Intl.DateTimeFormat("en-GB", {
   timeZone: TIME_ZONE,
 });
 
-/** "snapshot" for static data, "live 14:00 IST" for live data. */
+/** Day and three-letter month in Asia/Kolkata, e.g. "21 Oct". */
+function dayMonth(date: Date): string | undefined {
+  const parts = new Map(dateParts.formatToParts(date).map((part) => [part.type, part.value]));
+  const month = MONTHS[Number(parts.get("month")) - 1];
+  const day = parts.get("day")?.replace(/^0/, "");
+  return month && day ? `${day} ${month}` : undefined;
+}
+
+/** "snapshot" for static data, "synced 21 Oct, 13:42 IST" for live data. */
 export function sourceLabel(source: "live" | "static", fetchedAt: string): string {
   if (source === "static") return "snapshot";
   const date = new Date(fetchedAt);
-  return Number.isNaN(date.getTime()) ? "live" : `live ${timeFormat.format(date)} IST`;
+  if (Number.isNaN(date.getTime())) return "synced";
+  const dm = dayMonth(date);
+  return dm ? `synced ${dm}, ${timeFormat.format(date)} IST` : "synced";
 }
 
 /** "20 Sep 2026" in Asia/Kolkata. */
@@ -29,11 +39,9 @@ export function shortDate(iso: string | undefined): string | undefined {
   if (!iso) return undefined;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return undefined;
-  const parts = new Map(dateParts.formatToParts(date).map((part) => [part.type, part.value]));
-  const month = MONTHS[Number(parts.get("month")) - 1];
-  const day = parts.get("day")?.replace(/^0/, "");
-  const year = parts.get("year");
-  return month && day && year ? `${day} ${month} ${year}` : undefined;
+  const dm = dayMonth(date);
+  const year = new Map(dateParts.formatToParts(date).map((part) => [part.type, part.value])).get("year");
+  return dm && year ? `${dm} ${year}` : undefined;
 }
 
 export function formatNumber(value: number | undefined): string {

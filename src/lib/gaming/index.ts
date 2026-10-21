@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { env } from "@/lib/env";
 import { getPsnStats } from "@/lib/gaming/psn";
 import { describeError, snapshot } from "@/lib/gaming/shared";
@@ -20,12 +20,14 @@ function warnAndSnapshot(id: PlatformId, error: unknown): PlatformStats {
   return snapshot(id);
 }
 
-/* Each adapter is cached for an hour, catch inside the cached scope so a
- * failure is cached as the snapshot for the same hour and retried after. */
+/* Each adapter is cached for a day (stale-while-revalidate, tag "arcade"),
+ * catch inside the cached scope so a failure is cached as the snapshot for
+ * the same day and retried after, or sooner via POST /api/revalidate. */
 
 async function cachedSteam(): Promise<PlatformStats> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
+  cacheTag("arcade");
   try {
     return await getSteamStats();
   } catch (error) {
@@ -35,7 +37,8 @@ async function cachedSteam(): Promise<PlatformStats> {
 
 async function cachedXbox(): Promise<PlatformStats> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
+  cacheTag("arcade");
   try {
     return await getXboxStats();
   } catch (error) {
@@ -45,7 +48,8 @@ async function cachedXbox(): Promise<PlatformStats> {
 
 async function cachedPsn(): Promise<PlatformStats> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
+  cacheTag("arcade");
   try {
     return await getPsnStats();
   } catch (error) {

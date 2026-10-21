@@ -30,4 +30,7 @@ All commits so far, newest last. Dates are commit dates.
 - `f4636a3` 2026-10-21 docs: operating guide, docs folder, path rules — `CLAUDE.md` rewritten as the operating guide, spec frozen at `docs/spec.md`, `docs/` created, `.claude/rules/` added, public README rewritten
 
 ## Motion
-- (this commit) motion: arcade loader, count-up, xp bars — Suspense skeleton for the trophy case, aggregate numbers count up once in view, 2px XP bars under progress lines; all respect reduced motion, no new dependency
+- `6bdc1b9` 2026-10-21 motion: arcade loader, count-up, xp bars — Suspense skeleton for the trophy case, aggregate numbers count up once in view, 2px XP bars under progress lines; all respect reduced motion, no new dependency
+
+## Cadence
+- (this commit) arcade: daily cadence, revalidate route — `cacheLife("days")` with tags `arcade` and `github`, Steam "now playing" dropped, source label "synced 21 Oct, 13:42 IST", `POST /api/revalidate` guarded by `REVALIDATE_SECRET`

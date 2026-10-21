@@ -9,7 +9,7 @@ Hosted on Vercel, DNS on Cloudflare. Live at <https://www.neerajnero.com>; the a
 | Framework preset | Next.js |
 | Package manager | pnpm (from the `packageManager` field) |
 | Build command | `next build` (default) |
-| Output | default; `cacheComponents` is on, so `/` is a static shell with hourly revalidation |
+| Output | default; `cacheComponents` is on, so `/` is a static shell with daily revalidation |
 | Node | Vercel default for Next 16 |
 | Domains | `neerajnero.com` and `www.neerajnero.com`, with the apex redirecting to `www` (308, observed live) |
 
@@ -26,6 +26,7 @@ Every env var below is set in Project → Settings → Environment Variables for
 | `STEAM_ID64` | no | your profile URL or <https://steamid.io>; profile and "Game details" must be Public | Steam card shows the snapshot |
 | `OPENXBL_API_KEY` | no | <https://xbl.io> dashboard, signed in with the Microsoft account that owns the gamertag; free tier is 60 calls per 5 minutes | Xbox card shows the snapshot |
 | `PSN_NPSSO` | no | sign in at playstation.com, then open <https://ca.account.sony.com/api/v1/ssocookie>; expires about every two months | PlayStation card shows the snapshot and the log says `[psn] auth failed — refresh PSN_NPSSO` |
+| `REVALIDATE_SECRET` | no | generate a long random string (`openssl rand -hex 32`) and keep it in a password manager | `POST /api/revalidate` returns 404; caches refresh only on their daily schedule or on deploy |
 
 `.env` and `.env.local` are git-ignored by the `.env*` rule; `.env.example` is tracked and lists every name with empty values. The repo must never contain a value.
 
@@ -46,7 +47,7 @@ Vercel's Domains page defines the redirect between the two hostnames. Today the 
 
 ## First request after a deploy
 
-The build prerenders `/` and `/resume` with the Production env, so the first request already serves live arcade data if the keys worked during the build. `/opengraph-image` renders on its first request and reads the bundled TTFs. `/api/trophy-case` returns 404. After one hour the first request triggers a background refresh of the GitHub and gaming caches; after a day without traffic the next request waits for fresh data. A cold serverless instance re-runs the PSN NPSSO exchange once.
+The build prerenders `/` and `/resume` with the Production env, so the first request already serves live arcade data if the keys worked during the build. `/opengraph-image` renders on its first request and reads the bundled TTFs. `/api/trophy-case` returns 404. After a day, or after `POST /api/revalidate`, the first request triggers a background refresh of the GitHub and gaming caches; after a week without traffic the next request waits for fresh data. A cold serverless instance re-runs the PSN NPSSO exchange once.
 
 ## Rotating keys
 
@@ -56,6 +57,7 @@ In every case: create the new value, update the Vercel variable, redeploy, then 
 - **OpenXBL**: regenerate the key on the xbl.io dashboard. The old key stops immediately.
 - **PSN**: sign out of playstation.com to invalidate the session, sign in again, fetch a new NPSSO from the ssocookie URL. See [runbook.md](runbook.md#renew-the-psn-npsso).
 - **GitHub**: delete the token in Settings → Developer settings and create a new one; or remove the variable entirely and accept the anonymous limit.
+- **Revalidate secret**: generate a new string, update `REVALIDATE_SECRET`, redeploy, update the password manager entry. It is never logged; the route only compares it in constant time.
 
 If a key was ever exposed in a log, chat or commit, rotate it the same day; do not rely on scrubbing history.
 

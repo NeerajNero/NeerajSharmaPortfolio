@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { site } from "@/config/site";
 import { env } from "@/lib/env";
 
@@ -38,13 +38,14 @@ function repoNameFromUrl(url: string): string {
 
 /**
  * Side quests: the owner's most recently pushed public repos that are not
- * forks, not the profile repo, and not already featured. Cached for one hour.
- * Never throws: on any failure it warns once and returns an empty list, which
- * is cached for the same hour and retried after.
+ * forks, not the profile repo, and not already featured. Cached for a day
+ * under the "github" tag. Never throws: on any failure it warns once and
+ * returns an empty list, which is cached for the same day and retried after.
  */
 export async function getSideQuests(): Promise<SideQuest[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
+  cacheTag("github");
 
   const { endpoint, exclude, limit } = site.sideQuests;
   const excluded = new Set([

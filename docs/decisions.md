@@ -9,13 +9,13 @@ Consequence: no theme overrides to fight, and the §3 rules are enforced by read
 
 ## Cache Components with `"use cache"` instead of `unstable_cache`
 Context: create-next-app enabled `cacheComponents` by default on Next 16.
-Decision: keep it on and cache data with `"use cache"; cacheLife("hours")` in `github.ts` and `gaming/index.ts`.
-Consequence: the home page is a static shell with a one-hour revalidate and one-day expire; the debug route must call `connection()` to stay dynamic.
+Decision: keep it on and cache data with `"use cache"; cacheLife("days")` plus tags in `github.ts` and `gaming/index.ts`.
+Consequence: the home page is a static shell with a one-day revalidate and one-week expire; the debug route must call `connection()` to stay dynamic; a tagged `POST /api/revalidate` forces an earlier refresh.
 
 ## Catch inside the cached scope
 Context: if a cached function throws, nothing is cached and a build-time failure would be baked into the static shell until the next deploy.
 Decision: every cached function catches internally and returns the fallback (empty list or snapshot).
-Consequence: a failure is cached for exactly one hour and retried automatically; the cost is a one-hour stale fallback instead of a permanent one.
+Consequence: a failure is cached for a day (or until a manual revalidate) and retried automatically; the cost is a stale fallback for that window instead of a permanent one.
 
 ## Adapters throw, wrappers warn
 Context: early adapters caught their own errors and returned the snapshot silently in some paths.
@@ -50,7 +50,7 @@ Consequence: one fewer fragile dependency; the handle must be edited manually if
 ## Steam artwork fallback considered and not built
 Context: Steam header images come from a predictable CDN URL and can 404 for delisted apps.
 Decision: no probing or alternate CDN; the row renders name-only if the image fails to load.
-Consequence: zero extra requests per hour; a rare blank thumbnail is accepted.
+Consequence: zero extra requests per refresh; a rare blank thumbnail is accepted.
 
 ## pointerdown for boot skip
 Context: "any key, tap or click skips" had to feel instant on touch.
