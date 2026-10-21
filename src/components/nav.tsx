@@ -10,13 +10,21 @@ const SETTLE_MS = 700;
 
 /**
  * The active section is the last one whose top has crossed the nav line.
- * At the very bottom of the page the last section wins, since short trailing
- * sections can never reach the line on their own.
+ * At the very bottom of the page short trailing sections can never reach the
+ * line, so the section named in the URL hash wins if it is in view, else the
+ * last section.
  */
 function pickActive(sections: HTMLElement[]): string {
   const doc = document.documentElement;
   const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 2;
-  if (atBottom) return sections[sections.length - 1].id;
+  if (atBottom) {
+    const wanted = sections.find((s) => `#${s.id}` === window.location.hash);
+    if (wanted) {
+      const top = wanted.getBoundingClientRect().top;
+      if (top >= 0 && top < window.innerHeight) return wanted.id;
+    }
+    return sections[sections.length - 1].id;
+  }
   let current = sections[0].id;
   for (const section of sections) {
     if (section.getBoundingClientRect().top <= NAV_LINE_PX + 1) current = section.id;

@@ -70,12 +70,20 @@ export interface SideQuests {
   revalidate: number;
 }
 
+export interface PlatformLabel {
+  /** Card title. */
+  name: string;
+  /** Label under the aggregate number. */
+  aggregate: string;
+}
+
 export interface GamingConfig {
   /** Hand-filled snapshots used whenever a live adapter fails or has no key. */
   static: Record<PlatformId, PlatformStats>;
+  labels: Record<PlatformId, PlatformLabel>;
   /** Cache window for every adapter, in seconds. */
   revalidate: number;
-  blog: { name: string; url: string };
+  blog: { name: string; url: string; blurb: string };
 }
 
 export interface BootConfig {
@@ -314,16 +322,22 @@ export const site: SiteConfig = {
   sideQuests: {
     endpoint:
       "https://api.github.com/users/NeerajNero/repos?per_page=100&sort=updated",
-    exclude: ["NeerajNero"],
+    exclude: ["NeerajNero", "Steam-Achievements-Tracker", "NeerajSharmaPortfolio"],
     limit: 8,
     revalidate: 3600,
   },
 
   gaming: {
     revalidate: 3600,
+    labels: {
+      steam: { name: "Steam", aggregate: "Steam hours" },
+      xbox: { name: "Xbox", aggregate: "Xbox gamerscore" },
+      psn: { name: "PlayStation", aggregate: "PSN platinums" },
+    },
     blog: {
       name: "GameTechGuides",
       url: "https://github.com/NeerajNero/-GameTechBlog-",
+      blurb: "Gaming and tech blog: practical guides, hardware, setups.",
     },
     // TODO: fill in — these snapshots render whenever a platform key is missing
     // or its API fails. Replace the placeholder handles and zeros with real values.
@@ -356,7 +370,10 @@ export const site: SiteConfig = {
         handle: "online-id",
         headline: [
           { label: "level", value: "0" },
-          { label: "platinums", value: "0" },
+          { label: "bronze", value: "0" },
+          { label: "silver", value: "0" },
+          { label: "gold", value: "0" },
+          { label: "platinum", value: "0" },
         ],
         recent: [],
         source: "static",

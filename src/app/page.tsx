@@ -5,6 +5,7 @@ import { PlayerCard } from "@/components/player-card";
 import { QuestLog } from "@/components/quest-log";
 import { SectionHeader } from "@/components/section-header";
 import { SendPing } from "@/components/send-ping";
+import { TrophyCase } from "@/components/trophy-case";
 
 export default function Home() {
   return (
@@ -32,6 +33,7 @@ export default function Home() {
 
         <section id="arcade" aria-labelledby="arcade-title">
           <SectionHeader id="arcade" title="Arcade" />
+          <TrophyCase />
         </section>
 
         <section id="ping" aria-labelledby="ping-title">

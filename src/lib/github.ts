@@ -27,6 +27,7 @@ function isGitHubRepo(value: unknown): value is GitHubRepo {
     typeof repo.name === "string" &&
     typeof repo.html_url === "string" &&
     typeof repo.fork === "boolean" &&
+    typeof repo.archived === "boolean" &&
     typeof repo.pushed_at === "string"
   );
 }
@@ -72,7 +73,7 @@ export async function getSideQuests(): Promise<SideQuest[]> {
 
     return body
       .filter(isGitHubRepo)
-      .filter((repo) => !repo.fork && !excluded.has(repo.name.toLowerCase()))
+      .filter((repo) => !repo.fork && !repo.archived && !excluded.has(repo.name.toLowerCase()))
       .sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at))
       .slice(0, limit)
       .map((repo) => ({
