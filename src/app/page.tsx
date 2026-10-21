@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AchievementTriggers } from "@/components/achievement-triggers";
 import { BootSequence } from "@/components/boot-sequence";
 import { Campaign } from "@/components/campaign";
 import { Loadout } from "@/components/loadout";
@@ -13,6 +14,7 @@ export default function Home() {
   return (
     <>
       <BootSequence />
+      <AchievementTriggers />
       <div className="mx-auto flex max-w-[1040px] flex-col gap-16 px-6 py-12">
         <section id="player" aria-labelledby="player-name">
           <PlayerCard />

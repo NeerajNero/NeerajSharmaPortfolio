@@ -86,6 +86,21 @@ export interface GamingConfig {
   blog: { name: string; url: string; blurb: string };
 }
 
+export type AchievementId =
+  | "press-start"
+  | "secret-found"
+  | "completionist"
+  | "background-check"
+  | "speedrun";
+
+export interface Achievement {
+  id: AchievementId;
+  title: string;
+  description: string;
+  /** Shown as "???" until unlocked. */
+  hidden: boolean;
+}
+
 export interface BootConfig {
   /** Lines typed by the boot overlay, in order. */
   lines: string[];
@@ -103,6 +118,7 @@ export interface SiteConfig {
   featured: Project[];
   sideQuests: SideQuests;
   gaming: GamingConfig;
+  achievements: Achievement[];
   footer: { year: number; builtWith: string };
 }
 
@@ -141,7 +157,7 @@ export const site: SiteConfig = {
     experienceYears: "4+ years",
     status: "online",
     oneLiner:
-      "Full-stack engineer who builds backend systems, auth flows, and AI-assisted workflows in TypeScript. Plays on PC, PlayStation and Xbox.",
+      "Full-stack engineer building backend systems, AI-assisted workflows in TypeScript. Off the clock, a trophy hunter on PC, PlayStation and Xbox.",
     email: "neerajnero9066@gmail.com",
   },
 
@@ -396,6 +412,14 @@ export const site: SiteConfig = {
       },
     },
   },
+
+  achievements: [
+    { id: "press-start", title: "Press start", description: "Sat through the boot sequence. Or skipped it.", hidden: false },
+    { id: "secret-found", title: "Secret found", description: "Turned on CRT mode.", hidden: false },
+    { id: "completionist", title: "Completionist", description: "Saw every section.", hidden: false },
+    { id: "background-check", title: "Background check", description: "Opened the résumé.", hidden: false },
+    { id: "speedrun", title: "Speedrun", description: "Reached the bottom within eight seconds of boot.", hidden: true },
+  ],
 
   footer: {
     year: 2026,

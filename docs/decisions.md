@@ -71,3 +71,8 @@ Consequence: a fixed 160px date column on desktop, which the node offset depends
 Context: the spec's types had nowhere to carry PS4/PS5, and the logic had to stay in `psn.ts`.
 Decision: add `tag?: string` to `GameEntry`; the card renders it on the meta line.
 Consequence: a one-field deviation from the spec's types, documented in `arcade.md`.
+
+## No audio for achievements
+Context: an unlock chime is the obvious gaming cue.
+Decision: achievements are silent; the toast, the footer counter and the blinking cursor are the only feedback.
+Consequence: no autoplay-policy workarounds, no audio assets or dependency, nothing a visitor has to mute; the toast is the complete signal.

@@ -18,7 +18,7 @@ All copy, links, lists and snapshot numbers live in `src/config/site.ts` as one 
 | `identity.title`, `company`, `location` | `string` | `"Software Engineer 2"`, `"GeekyAnts"`, `"Bangalore"` |
 | `identity.experienceYears` | `string` | `"4+ years"` — résumé only |
 | `identity.status` | `string` | `"online"` — status dot label |
-| `identity.oneLiner` | `string` | the meta description and card blurb; keep under 70ch of wrap |
+| `identity.oneLiner` | `string` | `"Full-stack engineer building backend systems, AI-assisted workflows in TypeScript. Off the clock, a trophy hunter on PC, PlayStation and Xbox."` — meta description, player card and résumé |
 | `identity.email` | `string` | `"neerajnero9066@gmail.com"` |
 | `links.github`, `linkedin` | `string` | full URLs |
 | `links.resume` | `string` | `"/resume"` |
@@ -36,6 +36,7 @@ All copy, links, lists and snapshot numbers live in `src/config/site.ts` as one 
 | `gaming.labels` | `Record<PlatformId, { name, aggregate }>` | `{ name: "PlayStation", aggregate: "PSN platinums" }` |
 | `gaming.revalidate` | `number` | `3600`, documentary |
 | `gaming.blog` | `{ name, url, blurb }` | the GameTechGuides row under the cards |
+| `achievements` | `Achievement[]` | `{ id: "secret-found", title: "Secret found", description: "Turned on CRT mode.", hidden: false }`; order is display order |
 | `footer` | `{ year, builtWith }` | `{ year: 2026, builtWith: "Next.js" }` |
 
 `SNAPSHOT_AT` at the top of the file is the ISO timestamp stamped on every snapshot's `fetchedAt`.
@@ -68,6 +69,11 @@ Each `gaming.static.<platform>` is a full `PlatformStats` (see [arcade.md](arcad
 
 ### Hide a repo from side quests
 Add its exact repo name to `sideQuests.exclude`. Current list: `NeerajNero` (profile repo), `Steam-Achievements-Tracker`, `NeerajSharmaPortfolio`. Forks and archived repos are dropped automatically in `src/lib/github.ts`.
+
+### Add an achievement
+1. Add the id to the `AchievementId` union and an entry to `achievements` in `site.ts`: `id`, `title`, one dry-line `description`, `hidden`.
+2. Call `unlock("<id>")` from a client component or browser-only module where the trigger happens (`src/lib/achievements.ts`). It is idempotent; the toast and footer update themselves from the event.
+3. Add the row to the Achievements table in [design-system.md](design-system.md#achievements).
 
 ### Refresh snapshot numbers
 See [runbook.md](runbook.md#refresh-the-snapshot-numbers).

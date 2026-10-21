@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { ResumeVisited } from "@/components/resume-visited";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function ResumePage() {
 
   return (
     <article className="mx-auto flex max-w-[1040px] flex-col gap-10 px-6 py-12 print:gap-6 print:px-0 print:py-0">
+      <ResumeVisited />
       <header className="flex flex-col gap-3">
         <h1 className="font-display text-[20px] leading-[1.4] tracking-[0.02em] md:text-[28px]">
           {identity.legalName}

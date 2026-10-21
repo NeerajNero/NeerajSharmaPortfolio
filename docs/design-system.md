@@ -62,7 +62,10 @@ Interpretations already made: the player section has an `h1` and no HUD tab; the
 | `nav.tsx` | client | sticky header, brand, six `next/link`s and one sliding accent bar under the active one | none |
 | `boot-sequence.tsx` | client | full-viewport overlay with typed lines and caret | none |
 | `konami.tsx` | client | nothing | none |
-| `crt-overlay.tsx` | client | `.crt-scanlines` and `.crt-field` divs (shown via CSS), `role="status"` toast | none |
+| `crt-overlay.tsx` | client | `.crt-scanlines` and `.crt-field` divs (shown via CSS) | none |
+| `toaster.tsx` | client | the one toast queue (`role="status"`) | none |
+| `achievement-triggers.tsx`, `resume-visited.tsx` | client, render nothing | achievement triggers | none |
+| `achievements-footer.tsx` | client | footer `<details>` with the counter, list and reset | none |
 
 ## Platform card layout
 
@@ -88,7 +91,7 @@ Because the four children are subgrid items, row 3 takes the tallest card's heig
 - Keys `ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight b a` (letters compared lower-case) call `toggleCrt()`.
 - Five clicks on `[data-avatar]` within 2000 ms do the same, for touch.
 - `toggleCrt()` sets or removes `data-crt="on"` on `<html>`, writes `localStorage.crt = "on" | "off"`, sets `data-crt-anim` for the power sequence unless reduced motion is on, and dispatches a `crtchange` `CustomEvent` with the boolean.
-- `CrtOverlay` listens for `crtchange`, shows "crt mode on" / "crt mode off" bottom-left for 2000 ms. The scanlines are a CSS rule on `html[data-crt="on"] .crt-scanlines`: 2px lines of text colour at 6% every 4px, `pointer-events-none`, `z-[60]`.
+- `Toaster` listens for `crtchange` and queues "crt mode on" / "crt mode off" like any other toast. The scanlines are a CSS rule on `html[data-crt="on"] .crt-scanlines`: 2px lines of text colour at 6% every 4px, `pointer-events-none`, `z-[60]`.
 - On load, `PRE_PAINT_SCRIPT` restores `data-crt` from `localStorage` before first paint. `<html>` has `suppressHydrationWarning` for that reason.
 
 ### Nav (`nav.tsx`)
@@ -107,6 +110,7 @@ No motion library. Every animation checks `prefers-reduced-motion` (the global C
 | XP bar fill | `xp-bar.tsx` | row in view, once | 600 ms ease-out `scaleX` from 0 | full bar, no transition |
 | Quest-row cursor | `.quest-row::before` in `globals.css` | row hovered (pointer devices only), its link focused, or pressed on touch | blinks 500 ms on / 500 ms off via `steps(1)` while visible | visible, no blink |
 | Sliding nav tick | `.nav-tick` in `nav.tsx` | active section changes | 200 ms ease-out on `transform` and `width`; first placement instant; a partly hidden link in the mobile row is scrolled to its nearest edge with `list.scrollTo` (smooth) | instant moves, no transition; the row scroll is instant |
+| Toast slide | `.toast` in `globals.css`, `toaster.tsx` | an achievement unlock or the CRT toggle | 250 ms in, 3500 ms hold, 200 ms out, queued | 150 ms opacity fade, no slide |
 | CRT power-on / off | `.crt-field` and `.crt-scanlines` in `globals.css`, set by `setCrt()` | user toggles CRT (Konami or five avatar taps), never on a persisted reload | on: 2 px line at the viewport centre expands to full height over 300 ms, scanlines fade in during the last 100 ms; off: scanlines fade 100 ms, field collapses to the line over 200 ms, line fades 80 ms | instant state change; `data-crt-anim` is never set |
 
 Interaction motion details: quest rows reserve a 20 px left gutter so the cursor never shifts layout, and hover is gated by `@media (hover: hover)` so touch gets no sticky state. The nav tick is one absolutely positioned bar inside the scrolling list, moved imperatively to the active link's `offsetLeft`/`offsetWidth`, re-measured on window resize and by a `ResizeObserver` on the list and the active link. The CRT sequence is driven by `data-crt-anim="on" | "off"` on `<html>`, which `setCrt()` sets only for a user toggle and the field's `animationend` clears; the pre-paint script restores a persisted CRT state without it.
@@ -114,4 +118,20 @@ Interaction motion details: quest rows reserve a 20 px left gutter so the cursor
 The server always renders the final state (the real number, the full bar), so no-JS visitors and crawlers see the data. Counters reserve their width with `tabular-nums` and a `min-width` in `ch`. XP bars only render when the row has a progress value, and are muted when the card is a snapshot.
 
 Note on the skeleton: with the current caching model the home page is prerendered with the arcade data in it, so the skeleton is never shown on a normal request; see [architecture.md](architecture.md#caching-model). Its reserved heights match the real block in every case now that Steam has no "now playing" line: 553 px at 1280 and 1566 px at 375 for both.
+
+### Achievements
+
+Five achievements defined in `site.achievements` (`src/config/site.ts`), tracked by `src/lib/achievements.ts`, which persists `{ id: unlockedAtISO }` under the `localStorage` key `achievements`. `unlock(id)` is idempotent, records when the trigger fired in this page view, and dispatches an `achievement` `CustomEvent` only for a first unlock; `reset()` clears the key and dispatches `achievements:reset`. Every call is a no-op on the server and survives blocked storage.
+
+| Id | Trigger | Where |
+|---|---|---|
+| `press-start` | the boot overlay has unmounted, including a same-session skip | `boot-sequence.tsx` effect on `phase === "done"` |
+| `secret-found` | CRT turned on by the user | `setCrt(true)` in `src/lib/crt.ts` |
+| `completionist` | all six nav sections have had their top cross the viewport | `IntersectionObserver` in `achievement-triggers.tsx` |
+| `background-check` | `/resume` mounts, or the player card's Résumé link is clicked | `resume-visited.tsx`; click delegation on `[data-achievement="background-check"]`. The click persists the unlock and sets `sessionStorage["achievements:announce"]`, and `/resume` announces it on arrival so the toast is seen despite the navigation |
+| `speedrun` (hidden) | the ping section enters view less than 8000 ms after `press-start` fired in this page view | `achievement-triggers.tsx` using `firedAtMs("press-start")` |
+
+Toasts: `toaster.tsx` is one queue for achievements and the CRT toggle, bottom-left, 320 px max, 1 px line border on surface, a 10 px accent square, "Achievement unlocked" in muted 13 px above the title. Slide in 250 ms ease-out, hold 3500 ms, slide out 200 ms, strictly sequential. The container is `role="status" aria-live="polite"`. The press-start toast cannot precede the overlay's removal because the unlock fires after it unmounts. Reduced motion: 150 ms opacity fade in and out, no slide.
+
+Footer: `achievements-footer.tsx` renders `achievements n/5` as a `<details>` summary (server renders 0/5, the client reads storage after mount and follows the two events). Expanded, each row shows title, description and the unlock date or "locked"; the hidden one shows "???" and "Keep exploring." until unlocked. A "reset" button clears storage and the counter.
 

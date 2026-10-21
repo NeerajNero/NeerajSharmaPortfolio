@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { site } from "@/config/site";
+import { unlock } from "@/lib/achievements";
 
 const CHAR_MS_MAX = 16;
 const LINE_PAUSE_MS = 120;
@@ -105,6 +106,11 @@ export function BootSequence() {
       window.removeEventListener("pointerdown", finish);
     };
   }, [schedule]);
+
+  // Fires once the overlay has unmounted, including a same-session skip.
+  useEffect(() => {
+    if (phase === "done") unlock("press-start");
+  }, [phase]);
 
   if (phase === "done") return null;
 

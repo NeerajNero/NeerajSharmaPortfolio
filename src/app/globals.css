@@ -243,6 +243,23 @@ html[data-crt-anim="off"] .crt-scanlines {
   }
 }
 
+/* Toasts: slide in from the left, hold, slide out (see toaster.tsx) */
+.toast {
+  transform: translateX(calc(-100% - 16px));
+  opacity: 0;
+  transition:
+    transform 200ms ease-in,
+    opacity 200ms ease-in;
+}
+
+.toast[data-shown="true"] {
+  transform: translateX(0);
+  opacity: 1;
+  transition:
+    transform 250ms ease-out,
+    opacity 250ms ease-out;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -269,6 +286,14 @@ html[data-crt-anim="off"] .crt-scanlines {
   /* No power-on sequence: the toggle never sets data-crt-anim here */
   .crt-field {
     display: none !important;
+  }
+
+  /* Toasts fade instead of sliding; this outranks the 0s rule above */
+  .toast,
+  .toast[data-shown="true"] {
+    transform: none !important;
+    transition-property: opacity !important;
+    transition-duration: 150ms !important;
   }
 }
 

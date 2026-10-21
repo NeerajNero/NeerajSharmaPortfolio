@@ -95,7 +95,9 @@ export function PlayerCard() {
               </a>
             </li>
             <li>
-              <a href={links.resume}>Résumé</a>
+              <a href={links.resume} data-achievement="background-check">
+                Résumé
+              </a>
             </li>
           </ul>
         </div>

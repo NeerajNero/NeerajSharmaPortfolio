@@ -1,4 +1,5 @@
 /** Browser-only helpers for the CRT scanline toggle. */
+import { unlock } from "@/lib/achievements";
 
 export const CRT_EVENT = "crtchange";
 const STORAGE_KEY = "crt";
@@ -24,6 +25,7 @@ export function setCrt(on: boolean): void {
     // storage unavailable: the toggle still works for this page load
   }
   window.dispatchEvent(new CustomEvent<boolean>(CRT_EVENT, { detail: on }));
+  if (on) unlock("secret-found");
 }
 
 export function toggleCrt(): void {

@@ -36,4 +36,7 @@ All commits so far, newest last. Dates are commit dates.
 - `ca91de2` 2026-10-21 arcade: daily cadence, revalidate route — `cacheLife("days")` with tags `arcade` and `github`, Steam "now playing" dropped, source label "synced 21 Oct, 13:42 IST", `POST /api/revalidate` guarded by `REVALIDATE_SECRET`
 
 ## Motion 2
-- (this commit) motion: menu cursor, sliding nav tick, crt power-on — blinking ▶ cursor on quest rows (hover, focus, press), one sliding nav indicator, CRT power-on/off sequence on user toggles only; all respect reduced motion, no new dependency
+- `1d8a7e7` 2026-10-21 motion: menu cursor, sliding nav tick, crt power-on — blinking ▶ cursor on quest rows (hover, focus, press), one sliding nav indicator, CRT power-on/off sequence on user toggles only; all respect reduced motion, no new dependency
+
+## Motion 3
+- (this commit) motion: achievements, one-liner — five achievements with a localStorage engine, one shared toast queue (CRT toast moved into it), footer counter with details and reset, new one-liner

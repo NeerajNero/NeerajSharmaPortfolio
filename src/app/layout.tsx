@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Press_Start_2P } from "next/font/google";
+import { AchievementsFooter } from "@/components/achievements-footer";
 import { CrtOverlay } from "@/components/crt-overlay";
 import { Konami } from "@/components/konami";
 import { Nav } from "@/components/nav";
+import { Toaster } from "@/components/toaster";
 import { site } from "@/config/site";
 import { PRE_PAINT_SCRIPT } from "@/lib/crt";
 import { env } from "@/lib/env";
@@ -52,7 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <footer className="border-t border-line">
-          <p className="mx-auto flex max-w-[1040px] flex-wrap gap-x-5 gap-y-1 px-6 py-6 text-[13px] text-muted">
+          <div className="mx-auto flex max-w-[1040px] flex-wrap gap-x-5 gap-y-1 px-6 py-6 text-[13px] text-muted">
             <span>
               © {site.footer.year} {site.identity.displayName}
             </span>
@@ -60,10 +62,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <a href={site.links.sourceRepo} rel="noopener">
               source on GitHub
             </a>
-          </p>
+            <AchievementsFooter />
+          </div>
         </footer>
         <Konami />
         <CrtOverlay />
+        <Toaster />
       </body>
     </html>
   );
