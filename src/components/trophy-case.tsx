@@ -29,7 +29,7 @@ export async function TrophyCase() {
         ))}
       </dl>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))] md:grid-rows-[auto_auto_auto_auto]">
         {platforms.map((stats) => (
           <PlatformCard key={stats.id} stats={stats} />
         ))}

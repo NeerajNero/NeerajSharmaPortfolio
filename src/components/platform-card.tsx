@@ -19,75 +19,74 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
   const tiers = stats.headline.filter((h) => h.label in TIER_DOT);
   const pairs = stats.headline.filter((h) => !(h.label in TIER_DOT) && h.label !== "now playing");
 
+  /* Exactly four children: title, handle, stats, list. On desktop the card is
+     a row-subgrid of the trophy-case grid, so each child lands in the same
+     row across all three cards and the list divider lines up. */
   return (
-    <article className="flex min-w-0 flex-col gap-4 border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+    <article className="flex min-w-0 flex-col gap-4 border border-line bg-surface p-5 md:grid md:row-span-4 md:grid-rows-subgrid">
+      <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3>{label.name}</h3>
         <span className="text-[13px] text-muted">{sourceLabel(stats.source, stats.fetchedAt)}</span>
       </div>
 
-      <p className="text-[13px] text-muted">{stats.handle}</p>
+      <p className="min-w-0 truncate text-[13px] text-muted">{stats.handle}</p>
 
-      {stats.nowPlaying ? (
-        <p className="text-[13px]">
-          <span className="text-muted">now playing </span>
-          {stats.nowPlaying}
-        </p>
-      ) : null}
-
-      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-[13px]">
-        {pairs.map((pair) => (
-          <div key={pair.label} className="contents">
-            <dt className="text-muted">{pair.label}</dt>
-            <dd>{pair.value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      {tiers.length > 0 ? (
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
-          {tiers.map((tier) => (
-            <li key={tier.label} className="inline-flex items-center gap-2">
-              <span aria-hidden="true" className={`inline-block h-[6px] w-[6px] rounded-full ${TIER_DOT[tier.label]}`} />
-              <span className="sr-only">{tier.label} </span>
-              {tier.value}
-            </li>
+      <div className="flex min-w-0 flex-col gap-3 text-[13px]">
+        {stats.nowPlaying ? (
+          <p>
+            <span className="text-muted">now playing </span>
+            {stats.nowPlaying}
+          </p>
+        ) : null}
+        <dl className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-1">
+          {pairs.map((pair) => (
+            <div key={pair.label} className="contents">
+              <dt className="text-muted">{pair.label}</dt>
+              <dd>{pair.value}</dd>
+            </div>
           ))}
-        </ul>
-      ) : null}
-
-      {stats.recent.length > 0 ? (
-        <ul className="divide-y divide-line border-t border-line">
-          {stats.recent.slice(0, RECENT_SHOWN).map((game) => {
-            const meta = [
-              game.progress === undefined ? undefined : `${game.progress}%`,
-              shortDate(game.lastPlayed),
-            ].filter((m): m is string => m !== undefined);
-            return (
-              <li key={game.name} className="flex items-center gap-3 py-2">
-                {game.image ? (
-                  <Image
-                    src={game.image}
-                    alt=""
-                    width={IMAGE_PX}
-                    height={IMAGE_PX}
-                    className="h-12 w-12 shrink-0 border border-line object-cover"
-                  />
-                ) : null}
-                <div className="min-w-0">
-                  <p className="truncate text-[13px]">
-                    {game.name}
-                    {game.tag ? <span className="text-muted"> {game.tag}</span> : null}
-                  </p>
-                  {meta.length > 0 ? (
-                    <p className="text-[13px] text-muted">{meta.join("  ")}</p>
-                  ) : null}
-                </div>
+        </dl>
+        {tiers.length > 0 ? (
+          <ul className="flex flex-wrap gap-x-4 gap-y-1">
+            {tiers.map((tier) => (
+              <li key={tier.label} className="inline-flex items-center gap-2">
+                <span aria-hidden="true" className={`inline-block h-[6px] w-[6px] rounded-full ${TIER_DOT[tier.label]}`} />
+                <span className="sr-only">{tier.label} </span>
+                {tier.value}
               </li>
-            );
-          })}
-        </ul>
-      ) : null}
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      <ul className="min-w-0 divide-y divide-line border-t border-line">
+        {stats.recent.slice(0, RECENT_SHOWN).map((game) => {
+          const meta = [
+            game.progress === undefined ? undefined : `${game.progress}%`,
+            shortDate(game.lastPlayed),
+            game.tag,
+          ].filter((m): m is string => m !== undefined);
+          return (
+            <li key={game.name} className="flex min-w-0 items-center gap-3 py-2">
+              {game.image ? (
+                <Image
+                  src={game.image}
+                  alt=""
+                  width={IMAGE_PX}
+                  height={IMAGE_PX}
+                  className="h-12 w-12 shrink-0 border border-line object-cover"
+                />
+              ) : null}
+              <div className="min-w-0">
+                <p className="truncate text-[13px]">{game.name}</p>
+                {meta.length > 0 ? (
+                  <p className="text-[13px] text-muted">{meta.join("  ")}</p>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </article>
   );
 }
