@@ -4,6 +4,9 @@ import type { PlatformId, PlatformStats } from "@/lib/gaming/types";
 
 const allowedHosts = new Set<string>(IMAGE_HOSTS);
 
+/** How many recent games a platform card shows. Adapters may return more. */
+export const RECENT_SHOWN = 3;
+
 /** The hand-filled snapshot for a platform, stamped as static. */
 export function snapshot(id: PlatformId): PlatformStats {
   return { ...site.gaming.static[id], source: "static" };

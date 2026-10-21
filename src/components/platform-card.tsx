@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { site } from "@/config/site";
 import { shortDate, sourceLabel } from "@/lib/gaming/format";
+import { RECENT_SHOWN } from "@/lib/gaming/shared";
 import type { PlatformStats } from "@/lib/gaming/types";
 
 const IMAGE_PX = 48;
@@ -57,7 +58,7 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
 
       {stats.recent.length > 0 ? (
         <ul className="divide-y divide-line border-t border-line">
-          {stats.recent.map((game) => {
+          {stats.recent.slice(0, RECENT_SHOWN).map((game) => {
             const meta = [
               game.progress === undefined ? undefined : `${game.progress}%`,
               shortDate(game.lastPlayed),

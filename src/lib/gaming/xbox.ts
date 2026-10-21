@@ -67,12 +67,31 @@ function firstImage(images: unknown): string | undefined {
   return undefined;
 }
 
+/** Devices that mean the title was played through Xbox or the Microsoft Store. */
+const XBOX_DEVICES = new Set(["XboxSeries", "XboxOne", "Xbox360", "PC", "Mobile"]);
+
+/**
+ * The Xbox PC app logs third-party launchers' games (Steam via the Game Bar)
+ * into title history with devices ["Win32"], no pfn and no gamerscore. Keep
+ * a title when any device is an Xbox console or store platform; if devices
+ * are absent, fall back to a pfn or a gamerscore total as proof it is real.
+ */
+function isXboxTitle(raw: Record<string, unknown>): boolean {
+  const devices = Array.isArray(raw.devices)
+    ? raw.devices.filter((d): d is string => typeof d === "string")
+    : [];
+  if (devices.length > 0) return devices.some((d) => XBOX_DEVICES.has(d));
+  const achievement = isRecord(raw.achievement) ? raw.achievement : undefined;
+  const total = asNumber(achievement?.totalGamerscore) ?? 0;
+  return total > 0 || asString(raw.pfn) !== undefined;
+}
+
 function readTitles(raw: unknown): Title[] {
   const body = unwrap(raw);
   if (!isRecord(body) || !Array.isArray(body.titles)) return [];
   const titles: Title[] = [];
   for (const raw of body.titles) {
-    if (!isRecord(raw)) continue;
+    if (!isRecord(raw) || !isXboxTitle(raw)) continue;
     const name = asString(raw.name);
     if (!name) continue;
     const history = isRecord(raw.titleHistory) ? raw.titleHistory : undefined;
