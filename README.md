@@ -1,83 +1,33 @@
 # neerajnero.com
 
-Personal portfolio for Neeraj Sharma (`NeerajNero`). Next.js App Router, TypeScript, Tailwind v4, deployed on Vercel. All content lives in `src/config/site.ts`.
+![Home page at 1280px: nav, player card and loadout](docs/screenshot.png)
 
-## Local run
+A personal portfolio built as a player profile: dark, mono-spaced, one acid-green accent, HUD framing. Résumé content, a quest log of GitHub projects, and a trophy case that pulls live stats from Steam, Xbox and PlayStation.
+
+Live at <https://www.neerajnero.com>.
+
+## Stack
+
+Next.js 16 (App Router, Cache Components) · React 19 · TypeScript strict · Tailwind CSS v4 · `psn-api` · pnpm · Vercel. No component library; every component is hand-rolled.
+
+## How the arcade works
+
+Three server-side adapters, one per platform, each cached for an hour with `"use cache"`. Steam uses the Web API, Xbox goes through OpenXBL, PlayStation through `psn-api`. Each adapter validates the response shape and throws on anything empty, and a single wrapper logs one redacted warning and falls back to a hand-filled snapshot from `src/config/site.ts`. The site builds and renders with no keys at all; cards then show a small "snapshot" label instead of "live HH:MM IST". Keys never appear in logs, warnings or the debug route.
+
+## Local setup
 
 ```bash
 pnpm install
-cp .env.example .env.local   # fill in what you have; everything is optional
+cp .env.example .env.local   # fill in what you have; every variable is optional
 pnpm dev                     # http://localhost:3000
 ```
 
-Other scripts: `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm typecheck`.
+`pnpm typecheck`, `pnpm lint` and `pnpm build` must pass before a commit. In development, `GET /api/trophy-case` returns the arcade data as JSON for checking keys; it returns 404 in production.
 
-The site builds and renders with no environment variables at all. Every live integration falls back to the hand-filled snapshot in `site.gaming.static`, labelled "snapshot" in the UI.
+## Documentation
 
-In development, `GET /api/trophy-case` returns the arcade data as JSON so you can verify keys without the UI. It returns 404 in production.
-
-## Environment variables
-
-| Variable | Used for | Required |
-|---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | `metadataBase`, sitemap, robots | yes in production |
-| `NEXT_PUBLIC_DP_URL` | Cloudinary avatar; without it the card shows "NN" | no |
-| `GITHUB_TOKEN` | Raises the GitHub API rate limit for the side-quests list | no |
-| `STEAM_API_KEY`, `STEAM_ID64` | Steam card | no |
-| `OPENXBL_API_KEY` | Xbox card | no |
-| `PSN_NPSSO` | PlayStation card | no |
-
-Never commit `.env` or `.env.local`. Both are ignored; only `.env.example` is tracked.
-
-### Steam
-
-1. Get a Web API key at <https://steamcommunity.com/dev/apikey> (any domain name works).
-2. Find your 64-bit Steam ID: open your profile, Edit Profile, the URL contains it, or use <https://steamid.io>.
-3. In Steam privacy settings (Profile, Edit Profile, Privacy Settings) set **My profile** to Public and **Game details** to Public. If game details are private, the owned-games and recently-played calls return empty responses and the card falls back to the snapshot.
-
-### Xbox (OpenXBL)
-
-1. Sign in at <https://xbl.io> with the Microsoft account that owns the gamertag.
-2. Create an API key on the dashboard and put it in `OPENXBL_API_KEY`.
-3. The free tier allows roughly 150 requests per hour; this site makes 2 per hour.
-
-Note: OpenXBL wraps every response as `{ "content": { ... }, "code": 200 }`. The adapter unwraps `content` and also accepts the bare shape.
-
-### PlayStation (NPSSO)
-
-1. Log in at <https://www.playstation.com> in a browser.
-2. In the same browser open <https://ca.account.sony.com/api/v1/ssocookie> and copy the `npsso` value into `PSN_NPSSO`.
-3. The NPSSO expires roughly every two months. When it does, the server logs `[psn] auth failed — refresh PSN_NPSSO` and the card shows the snapshot until you repeat steps 1 and 2 and redeploy.
-
-The trophy API never returns the online ID, so set it by hand in `site.gaming.static.psn.handle`.
-
-### GitHub
-
-Optional. Create a fine-grained token with no extra permissions (public repos are readable without any) at <https://github.com/settings/tokens>. Without it the unauthenticated limit of 60 requests per hour still comfortably covers one fetch per hour.
-
-## Deploy on Vercel
-
-1. Import the repository at <https://vercel.com/new>. Framework preset: Next.js, package manager: pnpm. No build settings need changing.
-2. Add the environment variables above under Project Settings, Environment Variables. Set `NEXT_PUBLIC_SITE_URL` to `https://neerajnero.com`.
-3. Deploy. Live gaming data is cached for one hour and revalidated in the background.
-
-### DNS for neerajnero.com
-
-At your registrar:
-
-| Type | Name | Value |
-|---|---|---|
-| A | `@` | `76.76.21.21` |
-| CNAME | `www` | `cname.vercel-dns.com` |
-
-Then in Vercel, Project Settings, Domains, add both `neerajnero.com` and `www.neerajnero.com`, and set `www` to redirect to the apex.
-
-## Résumé
-
-`/resume` renders from `site.ts` with a print stylesheet (white, black text, no nav). A "Download PDF" link appears only when `public/resume.pdf` exists at build time.
-
-Reminder: the PDF carries your phone number. The site itself never renders one, so consider dropping a scrubbed copy in `public/` instead of the original.
+Start at [docs/README.md](docs/README.md): architecture, content schema, design system, the arcade adapters, deployment and DNS, a runbook, decisions, and the changelog. The original build spec is frozen at [docs/spec.md](docs/spec.md).
 
 ## Fonts
 
-Press Start 2P and JetBrains Mono load through `next/font/google`. Copies of both TTFs sit in `src/app/fonts/` for the Open Graph image; both are under the SIL Open Font License (licence texts alongside).
+Press Start 2P and JetBrains Mono, both under the SIL Open Font License. Copies and licence texts are in `src/app/fonts/` for the Open Graph image.
