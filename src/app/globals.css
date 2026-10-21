@@ -99,6 +99,41 @@ html[data-crt="on"] .crt-scanlines {
   }
 }
 
-/* Print — filled in phase 5 */
+/* Print: white page, black text, no chrome */
 @media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body > header,
+  body > footer,
+  [data-boot-overlay],
+  .crt-scanlines,
+  [role="status"] {
+    display: none !important;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  .text-muted {
+    color: #444 !important;
+  }
+
+  .text-accent {
+    color: #000 !important;
+  }
+
+  .border-line,
+  .divide-line > :not([hidden]) ~ :not([hidden]) {
+    border-color: #999 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
 }

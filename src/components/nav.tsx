@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { site } from "@/config/site";
 
 /** Where a section's top lands after an anchor scroll; matches scroll-margin-top in globals.css. */
@@ -34,6 +36,9 @@ function pickActive(sections: HTMLElement[]): string {
 
 export function Nav() {
   const [active, setActive] = useState<string>(site.nav[0]?.id ?? "");
+  const settleRef = useRef<(() => void) | undefined>(undefined);
+  // Nav lives in the layout and survives route changes; re-attach per page.
+  const pathname = usePathname();
 
   useEffect(() => {
     const sections = site.nav
@@ -52,23 +57,24 @@ export function Nav() {
     // the scroll settles (scrollend) and, for browsers without it, after a
     // fixed delay following an anchor jump.
     let settle: number | undefined;
-    const onHashChange = () => {
-      update();
+    const onJump = () => {
       window.clearTimeout(settle);
       settle = window.setTimeout(update, SETTLE_MS);
     };
+    settleRef.current = onJump;
     window.addEventListener("scrollend", update);
-    window.addEventListener("hashchange", onHashChange);
+    window.addEventListener("hashchange", onJump);
     const raf = requestAnimationFrame(update);
 
     return () => {
+      settleRef.current = undefined;
       observer.disconnect();
       window.removeEventListener("scrollend", update);
-      window.removeEventListener("hashchange", onHashChange);
+      window.removeEventListener("hashchange", onJump);
       window.clearTimeout(settle);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-[8px]">
@@ -76,19 +82,21 @@ export function Nav() {
         aria-label="Primary"
         className="mx-auto flex h-14 max-w-[1040px] items-center gap-6 px-6"
       >
-        <a
-          href="#player"
+        <Link
+          href="/#player"
+          onClick={() => settleRef.current?.()}
           className="shrink-0 font-display text-[11px] leading-none text-accent"
         >
           {site.identity.handle}
-        </a>
+        </Link>
         <ul className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto text-[13px] text-muted [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {site.nav.map((item) => {
             const isActive = item.id === active;
             return (
               <li key={item.id} className="shrink-0">
-                <a
-                  href={`#${item.id}`}
+                <Link
+                  href={`/#${item.id}`}
+                  onClick={() => settleRef.current?.()}
                   aria-current={isActive ? "true" : undefined}
                   className={`inline-flex items-center gap-2 py-1 ${isActive ? "text-text" : ""}`}
                 >
@@ -97,7 +105,7 @@ export function Nav() {
                     className={`inline-block h-px w-2 ${isActive ? "bg-accent" : "bg-transparent"}`}
                   />
                   {item.label}
-                </a>
+                </Link>
               </li>
             );
           })}

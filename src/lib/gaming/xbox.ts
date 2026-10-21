@@ -2,12 +2,13 @@ import { env } from "@/lib/env";
 import {
   asNumber,
   asString,
-  describeError,
+  assertUsable,
   fetchJson,
   formatCount,
   isRecord,
   nowIso,
   safeImage,
+  ShapeError,
   snapshot,
 } from "@/lib/gaming/shared";
 import type { GameEntry, PlatformStats } from "@/lib/gaming/types";
@@ -42,6 +43,30 @@ function readSettings(raw: unknown): Map<string, string> {
   return settings;
 }
 
+/**
+ * progressPercentage when present and non-zero; otherwise derived from
+ * currentGamerscore / totalGamerscore when there is any gamerscore to count.
+ */
+function readProgress(achievement: unknown): number | undefined {
+  if (!isRecord(achievement)) return undefined;
+  const percentage = asNumber(achievement.progressPercentage);
+  if (percentage !== undefined && percentage > 0) return Math.round(percentage);
+  const current = asNumber(achievement.currentGamerscore) ?? 0;
+  const total = asNumber(achievement.totalGamerscore) ?? 0;
+  if (current > 0 && total > 0) return Math.round((current / total) * 100);
+  return percentage === undefined ? undefined : 0;
+}
+
+/** First allowed URL in a title's images array, when displayImage is empty. */
+function firstImage(images: unknown): string | undefined {
+  if (!Array.isArray(images)) return undefined;
+  for (const entry of images) {
+    const url = isRecord(entry) ? safeImage(entry.url) : undefined;
+    if (url) return url;
+  }
+  return undefined;
+}
+
 function readTitles(raw: unknown): Title[] {
   const body = unwrap(raw);
   if (!isRecord(body) || !Array.isArray(body.titles)) return [];
@@ -51,18 +76,18 @@ function readTitles(raw: unknown): Title[] {
     const name = asString(raw.name);
     if (!name) continue;
     const history = isRecord(raw.titleHistory) ? raw.titleHistory : undefined;
-    const achievement = isRecord(raw.achievement) ? raw.achievement : undefined;
     const lastPlayed = asString(history?.lastTimePlayed);
     titles.push({
       name,
-      image: safeImage(raw.displayImage),
+      image: safeImage(raw.displayImage) ?? firstImage(raw.images),
       lastPlayed: lastPlayed && !Number.isNaN(Date.parse(lastPlayed)) ? lastPlayed : undefined,
-      progress: asNumber(achievement?.progressPercentage),
+      progress: readProgress(raw.achievement),
     });
   }
   return titles;
 }
 
+/** Throws on any failure; the cached wrapper in index.ts falls back to the snapshot. */
 export async function getXboxStats(): Promise<PlatformStats> {
   const key = env.openXblApiKey;
   if (!key) return snapshot("xbox");
@@ -73,44 +98,40 @@ export async function getXboxStats(): Promise<PlatformStats> {
     "Accept-Language": "en-US",
   };
 
-  try {
-    const [accountBody, historyBody] = await Promise.all([
-      fetchJson(`${BASE}/account`, { headers }, "account", [key]),
-      fetchJson(`${BASE}/player/titleHistory`, { headers }, "titleHistory", [key]),
-    ]);
+  const [accountBody, historyBody] = await Promise.all([
+    fetchJson(`${BASE}/account`, { headers }, "account", [key]),
+    fetchJson(`${BASE}/player/titleHistory`, { headers }, "titleHistory", [key]),
+  ]);
 
-    const settings = readSettings(accountBody);
-    const handle = settings.get("Gamertag") ?? snapshot("xbox").handle;
-    const parsedScore = Number(settings.get("Gamerscore"));
-    const gamerscore = Number.isFinite(parsedScore) ? parsedScore : 0;
+  const settings = readSettings(accountBody);
+  const handle = settings.get("Gamertag");
+  if (!handle) throw new ShapeError("account returned no Gamertag");
+  const parsedScore = Number(settings.get("Gamerscore"));
+  const gamerscore = Number.isFinite(parsedScore) ? parsedScore : 0;
 
-    const titles = readTitles(historyBody);
-    const completions = titles.filter((t) => t.progress === 100).length;
-    const recent: GameEntry[] = titles
-      .filter((t) => t.lastPlayed !== undefined)
-      .sort((a, b) => Date.parse(b.lastPlayed ?? "") - Date.parse(a.lastPlayed ?? ""))
-      .slice(0, RECENT_COUNT)
-      .map((t) => ({
-        name: t.name,
-        image: t.image,
-        lastPlayed: t.lastPlayed,
-        progress: t.progress === undefined ? undefined : Math.round(t.progress),
-      }));
+  const titles = readTitles(historyBody);
+  const completions = titles.filter((t) => t.progress === 100).length;
+  const recent: GameEntry[] = titles
+    .filter((t) => t.lastPlayed !== undefined)
+    .sort((a, b) => Date.parse(b.lastPlayed ?? "") - Date.parse(a.lastPlayed ?? ""))
+    .slice(0, RECENT_COUNT)
+    .map((t) => ({
+      name: t.name,
+      image: t.image,
+      lastPlayed: t.lastPlayed,
+      progress: t.progress === undefined ? undefined : Math.round(t.progress),
+    }));
 
-    return {
-      id: "xbox",
-      handle,
-      headline: [
-        { label: "gamerscore", value: formatCount(gamerscore) },
-        { label: "titles", value: formatCount(titles.length) },
-        { label: "100% completions", value: formatCount(completions) },
-      ],
-      recent,
-      source: "live",
-      fetchedAt: nowIso(),
-    };
-  } catch (error) {
-    console.warn(`[xbox] falling back to snapshot: ${describeError(error, [key])}`);
-    return snapshot("xbox");
-  }
+  return assertUsable({
+    id: "xbox",
+    handle,
+    headline: [
+      { label: "gamerscore", value: formatCount(gamerscore) },
+      { label: "titles", value: formatCount(titles.length) },
+      { label: "100% completions", value: formatCount(completions) },
+    ],
+    recent,
+    source: "live",
+    fetchedAt: nowIso(),
+  });
 }

@@ -2,12 +2,13 @@ import { env } from "@/lib/env";
 import {
   asNumber,
   asString,
-  describeError,
+  assertUsable,
   fetchJson,
   formatCount,
   isRecord,
   nowIso,
   safeImage,
+  ShapeError,
   snapshot,
 } from "@/lib/gaming/shared";
 import type { GameEntry, PlatformStats } from "@/lib/gaming/types";
@@ -58,110 +59,107 @@ async function achievementProgress(
   return Math.round((achieved / total) * 100);
 }
 
+/** Throws on any failure; the cached wrapper in index.ts falls back to the snapshot. */
 export async function getSteamStats(): Promise<PlatformStats> {
   const key = env.steamApiKey;
   const steamId = env.steamId64;
   if (!key || !steamId) return snapshot("steam");
 
-  try {
-    const [summaryBody, ownedBody, recentBody] = await Promise.all([
-      fetchJson(
-        steamUrl("/ISteamUser/GetPlayerSummaries/v2/", { key, steamids: steamId }),
-        {},
-        "GetPlayerSummaries",
-        [key],
-      ),
-      fetchJson(
-        steamUrl("/IPlayerService/GetOwnedGames/v1/", {
-          key,
-          steamid: steamId,
-          include_appinfo: "1",
-        }),
-        {},
-        "GetOwnedGames",
-        [key],
-      ),
-      fetchJson(
-        steamUrl("/IPlayerService/GetRecentlyPlayedGames/v1/", {
-          key,
-          steamid: steamId,
-          count: String(RECENT_COUNT),
-        }),
-        {},
-        "GetRecentlyPlayedGames",
-        [key],
-      ),
-    ]);
+  const [summaryBody, ownedBody, recentBody] = await Promise.all([
+    fetchJson(
+      steamUrl("/ISteamUser/GetPlayerSummaries/v2/", { key, steamids: steamId }),
+      {},
+      "GetPlayerSummaries",
+      [key],
+    ),
+    fetchJson(
+      steamUrl("/IPlayerService/GetOwnedGames/v1/", {
+        key,
+        steamid: steamId,
+        include_appinfo: "1",
+      }),
+      {},
+      "GetOwnedGames",
+      [key],
+    ),
+    fetchJson(
+      steamUrl("/IPlayerService/GetRecentlyPlayedGames/v1/", {
+        key,
+        steamid: steamId,
+        count: String(RECENT_COUNT),
+      }),
+      {},
+      "GetRecentlyPlayedGames",
+      [key],
+    ),
+  ]);
 
-    const player =
-      isRecord(summaryBody) &&
-      isRecord(summaryBody.response) &&
-      Array.isArray(summaryBody.response.players) &&
-      isRecord(summaryBody.response.players[0])
-        ? summaryBody.response.players[0]
-        : undefined;
-    const handle = asString(player?.personaname) ?? snapshot("steam").handle;
-    const nowPlaying = asString(player?.gameextrainfo);
+  const player =
+    isRecord(summaryBody) &&
+    isRecord(summaryBody.response) &&
+    Array.isArray(summaryBody.response.players) &&
+    isRecord(summaryBody.response.players[0])
+      ? summaryBody.response.players[0]
+      : undefined;
+  const handle = asString(player?.personaname);
+  if (!handle) throw new ShapeError("GetPlayerSummaries returned no personaname");
+  const nowPlaying = asString(player?.gameextrainfo);
 
-    const owned = new Map<number, OwnedGame>();
-    for (const game of readGames(ownedBody)) {
-      if (!isRecord(game)) continue;
+  const owned = new Map<number, OwnedGame>();
+  for (const game of readGames(ownedBody)) {
+    if (!isRecord(game)) continue;
+    const appid = asNumber(game.appid);
+    if (appid === undefined) continue;
+    const last = asNumber(game.rtime_last_played);
+    owned.set(appid, {
+      appid,
+      playtimeMinutes: asNumber(game.playtime_forever) ?? 0,
+      lastPlayed: last && last > 0 ? new Date(last * 1000).toISOString() : undefined,
+    });
+  }
+  const gameCount =
+    (isRecord(ownedBody) && isRecord(ownedBody.response)
+      ? asNumber(ownedBody.response.game_count)
+      : undefined) ?? owned.size;
+  const totalMinutes = [...owned.values()].reduce((n, g) => n + g.playtimeMinutes, 0);
+  const hours = Math.round(totalMinutes / 60);
+
+  const recentRaw = readGames(recentBody).filter(isRecord).slice(0, RECENT_COUNT);
+  const recent: GameEntry[] = await Promise.all(
+    recentRaw.map(async (game) => {
       const appid = asNumber(game.appid);
-      if (appid === undefined) continue;
-      const last = asNumber(game.rtime_last_played);
-      owned.set(appid, {
-        appid,
-        playtimeMinutes: asNumber(game.playtime_forever) ?? 0,
-        lastPlayed: last && last > 0 ? new Date(last * 1000).toISOString() : undefined,
-      });
-    }
-    const gameCount =
-      (isRecord(ownedBody) && isRecord(ownedBody.response)
-        ? asNumber(ownedBody.response.game_count)
-        : undefined) ?? owned.size;
-    const totalMinutes = [...owned.values()].reduce((n, g) => n + g.playtimeMinutes, 0);
-    const hours = Math.round(totalMinutes / 60);
-
-    const recentRaw = readGames(recentBody).filter(isRecord).slice(0, RECENT_COUNT);
-    const recent: GameEntry[] = await Promise.all(
-      recentRaw.map(async (game) => {
-        const appid = asNumber(game.appid);
-        const name = asString(game.name) ?? "Unknown game";
-        const minutes = asNumber(game.playtime_forever) ?? 0;
-        const progress =
+      const name = asString(game.name) ?? "Unknown game";
+      const minutes = asNumber(game.playtime_forever) ?? 0;
+      const progress =
+        appid === undefined
+          ? undefined
+          : await achievementProgress(key, steamId, appid).catch(() => undefined);
+      return {
+        name,
+        image:
           appid === undefined
             ? undefined
-            : await achievementProgress(key, steamId, appid).catch(() => undefined);
-        return {
-          name,
-          image:
-            appid === undefined
-              ? undefined
-              : safeImage(`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`),
-          lastPlayed: appid === undefined ? undefined : owned.get(appid)?.lastPlayed,
-          progress,
-          hours: Math.round(minutes / 60),
-        };
-      }),
-    );
+            : safeImage(`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`),
+        lastPlayed: appid === undefined ? undefined : owned.get(appid)?.lastPlayed,
+        progress,
+        hours: Math.round(minutes / 60),
+      };
+    }),
+  );
 
-    const headline = [
-      { label: "hours", value: formatCount(hours) },
-      { label: "games", value: formatCount(gameCount) },
-    ];
-    if (nowPlaying) headline.push({ label: "now playing", value: nowPlaying });
+  const headline = [
+    { label: "hours", value: formatCount(hours) },
+    { label: "games", value: formatCount(gameCount) },
+  ];
+  if (nowPlaying) headline.push({ label: "now playing", value: nowPlaying });
 
-    return {
+  return assertUsable({
       id: "steam",
       handle,
       nowPlaying,
       headline,
       recent,
-      source: "live",
-      fetchedAt: nowIso(),
-    };
-  } catch (error) {
-    console.warn(`[steam] falling back to snapshot: ${describeError(error, [key])}`);
-    return snapshot("steam");
-  }
+    source: "live",
+    fetchedAt: nowIso(),
+  });
 }

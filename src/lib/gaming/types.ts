@@ -6,6 +6,7 @@ export interface GameEntry {
   lastPlayed?: string; // ISO
   progress?: number; // 0–100 achievement/trophy %
   hours?: number; // total hours, where the platform gives it
+  tag?: string; // short muted suffix after the name, e.g. "PS5"
 }
 
 export interface PlatformStats {

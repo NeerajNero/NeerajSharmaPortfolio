@@ -19,7 +19,7 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
   const pairs = stats.headline.filter((h) => !(h.label in TIER_DOT) && h.label !== "now playing");
 
   return (
-    <article className="flex flex-col gap-4 border border-line bg-surface p-5">
+    <article className="flex min-w-0 flex-col gap-4 border border-line bg-surface p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3>{label.name}</h3>
         <span className="text-[13px] text-muted">{sourceLabel(stats.source, stats.fetchedAt)}</span>
@@ -75,7 +75,10 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
                   />
                 ) : null}
                 <div className="min-w-0">
-                  <p className="truncate text-[13px]">{game.name}</p>
+                  <p className="truncate text-[13px]">
+                    {game.name}
+                    {game.tag ? <span className="text-muted"> {game.tag}</span> : null}
+                  </p>
                   {meta.length > 0 ? (
                     <p className="text-[13px] text-muted">{meta.join("  ")}</p>
                   ) : null}

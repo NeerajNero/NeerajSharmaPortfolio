@@ -4,6 +4,7 @@ export const IMAGE_HOSTS = [
   "cdn.cloudflare.steamstatic.com",
   "avatars.steamstatic.com",
   "images-eds-ssl.xboxlive.com",
+  "store-images.s-microsoft.com",
   "image.api.playstation.com",
   "psnobj.prod.dl.playstation.net",
 ] as const;

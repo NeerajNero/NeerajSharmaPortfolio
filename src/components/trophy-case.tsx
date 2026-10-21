@@ -9,10 +9,11 @@ export async function TrophyCase() {
   const byId = new Map(platforms.map((p) => [p.id, p]));
   const isLive = (id: PlatformId) => byId.get(id)?.source === "live";
 
+  // Platinums lead.
   const numbers: { id: PlatformId; value: number | undefined }[] = [
-    { id: "steam", value: aggregate.steamHours },
-    { id: "xbox", value: aggregate.gamerscore },
     { id: "psn", value: aggregate.platinums },
+    { id: "xbox", value: aggregate.gamerscore },
+    { id: "steam", value: aggregate.steamHours },
   ];
 
   return (
@@ -28,7 +29,7 @@ export async function TrophyCase() {
         ))}
       </dl>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))]">
         {platforms.map((stats) => (
           <PlatformCard key={stats.id} stats={stats} />
         ))}

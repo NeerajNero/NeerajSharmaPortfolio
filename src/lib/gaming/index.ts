@@ -1,4 +1,5 @@
 import { cacheLife } from "next/cache";
+import { env } from "@/lib/env";
 import { getPsnStats } from "@/lib/gaming/psn";
 import { describeError, snapshot } from "@/lib/gaming/shared";
 import { getSteamStats } from "@/lib/gaming/steam";
@@ -12,8 +13,10 @@ export interface TrophyCase {
 
 const ORDER: PlatformId[] = ["steam", "xbox", "psn"];
 
+/** Any adapter failure lands here: one warning, keys redacted, then the snapshot. */
 function warnAndSnapshot(id: PlatformId, error: unknown): PlatformStats {
-  console.warn(`[${id}] adapter threw: ${describeError(error)}`);
+  const secrets = [env.steamApiKey, env.steamId64, env.openXblApiKey, env.psnNpsso];
+  console.warn(`[${id}] falling back to snapshot: ${describeError(error, secrets)}`);
   return snapshot(id);
 }
 

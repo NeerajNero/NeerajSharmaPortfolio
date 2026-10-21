@@ -106,7 +106,7 @@ export interface SiteConfig {
   footer: { year: number; builtWith: string };
 }
 
-const SNAPSHOT_AT = "2026-10-21T00:00:00.000Z";
+const SNAPSHOT_AT = "2026-10-21T07:10:56.000Z";
 
 export const site: SiteConfig = {
   domain: "neerajnero.com",
@@ -339,43 +339,58 @@ export const site: SiteConfig = {
       url: "https://github.com/NeerajNero/-GameTechBlog-",
       blurb: "Gaming and tech blog: practical guides, hardware, setups.",
     },
-    // TODO: fill in — these snapshots render whenever a platform key is missing
-    // or its API fails. Replace the placeholder handles and zeros with real values.
+    // Snapshot of the live run on 2026-10-21; shown whenever a key is missing or an API fails.
     static: {
       steam: {
         id: "steam",
-        handle: "steam-id",
+        handle: "Neeraj_Nero",
         headline: [
-          { label: "hours", value: "0" },
-          { label: "games", value: "0" },
+          { label: "hours", value: "532" },
+          { label: "games", value: "115" },
         ],
-        recent: [],
+        recent: [
+          { name: "Marvel's Spider-Man Remastered", progress: 97, hours: 44 },
+          { name: "Mafia: The Old Country", progress: 48, hours: 14 },
+          { name: "Mafia III: Definitive Edition", progress: 0, hours: 1 },
+        ],
         source: "static",
         fetchedAt: SNAPSHOT_AT,
       },
       xbox: {
         id: "xbox",
-        handle: "gamertag",
+        handle: "NeerajNero",
         headline: [
-          { label: "gamerscore", value: "0" },
-          { label: "titles", value: "0" },
-          { label: "100% completions", value: "0" },
+          { label: "gamerscore", value: "24,336" },
+          { label: "titles", value: "191" },
+          { label: "100% completions", value: "8" },
         ],
-        recent: [],
+        recent: [
+          { name: "Marvel's Spider-Man Remastered" },
+          { name: "Mafia: The Old Country" },
+          { name: "Mafia III" },
+          { name: "The Witcher 3: Wild Hunt" },
+          { name: "Days Gone" },
+        ],
         source: "static",
         fetchedAt: SNAPSHOT_AT,
       },
       psn: {
         id: "psn",
-        handle: "online-id",
+        // TODO: replace with the real PSN online ID; the trophy API never returns it.
+        handle: "PSN_ONLINE_ID_HERE",
         headline: [
-          { label: "level", value: "0" },
-          { label: "bronze", value: "0" },
-          { label: "silver", value: "0" },
-          { label: "gold", value: "0" },
-          { label: "platinum", value: "0" },
+          { label: "level", value: "607" },
+          { label: "bronze", value: "7,003" },
+          { label: "silver", value: "2,927" },
+          { label: "gold", value: "2,173" },
+          { label: "platinum", value: "312" },
         ],
-        recent: [],
+        recent: [
+          { name: "Mafia III: Definitive Edition", tag: "PS5", progress: 2 },
+          { name: "Asphalt Legends Unite", progress: 55 },
+          { name: "Cyberpunk 2077", progress: 7 },
+          { name: "The Legend of Fireball", progress: 100 },
+        ],
         source: "static",
         fetchedAt: SNAPSHOT_AT,
       },

@@ -76,6 +76,28 @@ export async function fetchJson(
   }
 }
 
+/** A 200 response that parsed to nothing usable. The wrapper falls back to the snapshot. */
+export class ShapeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ShapeError";
+  }
+}
+
+/**
+ * Live stats must carry a real handle and at least one non-zero headline
+ * number; otherwise the adapter is reporting "live" with placeholder data.
+ */
+export function assertUsable(stats: PlatformStats): PlatformStats {
+  if (stats.handle.trim().length === 0) throw new ShapeError("no handle in response");
+  const usable = stats.headline.some((pair) => {
+    const value = Number(pair.value.replace(/[^\d.-]/g, ""));
+    return Number.isFinite(value) && value > 0;
+  });
+  if (!usable) throw new ShapeError("no usable headline values in response");
+  return stats;
+}
+
 /** One-line description of any thrown value for a warning, with secrets redacted. */
 export function describeError(error: unknown, secrets: (string | undefined)[] = []): string {
   if (error instanceof HttpError) return excerpt(error.message, secrets);
