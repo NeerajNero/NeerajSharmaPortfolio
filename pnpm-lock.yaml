@@ -11,6 +11,9 @@ importers:
       next:
         specifier: 16.4.2
         version: 16.4.2(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      psn-api:
+        specifier: ^2.18.1
+        version: 2.18.1
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -1706,6 +1709,10 @@ packages:
 
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+
+  psn-api@2.18.1:
+    resolution: {integrity: sha512-D0oVrJK+hVwJFARp2Io/auqJwjRx2t7x4Cke7mYNFbrOUQxSBONl0fHr4eVK5Bai89RNyaAsLPLFmgIw9pxzmQ==}
+    engines: {node: '>=20', pnpm: '>=10'}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -3748,6 +3755,8 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
+
+  psn-api@2.18.1: {}
 
   punycode@2.3.1: {}
 

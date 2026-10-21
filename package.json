@@ -1,15 +1,17 @@
 {
-  "name": "portfolio",
+  "name": "neerajnero",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "next": "16.4.2",
+    "psn-api": "^2.18.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
