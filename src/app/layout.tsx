@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Press_Start_2P } from "next/font/google";
+import { CrtOverlay } from "@/components/crt-overlay";
+import { Konami } from "@/components/konami";
 import { Nav } from "@/components/nav";
 import { site } from "@/config/site";
+import { PRE_PAINT_SCRIPT } from "@/lib/crt";
 import { env } from "@/lib/env";
 import "./globals.css";
 
@@ -29,7 +32,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${display.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: PRE_PAINT_SCRIPT }} />
+      </head>
       <body className="min-h-dvh flex flex-col">
         <a
           href="#main"
@@ -46,6 +56,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {/* footer content arrives in phase 3 */}
           </div>
         </footer>
+        <Konami />
+        <CrtOverlay />
       </body>
     </html>
   );

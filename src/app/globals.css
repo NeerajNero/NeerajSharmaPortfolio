@@ -13,57 +13,74 @@
   --radius: 2px;
 }
 
-/* Base */
-html {
-  background-color: var(--color-bg);
-  color-scheme: dark;
-  scroll-behavior: smooth;
-}
+/* Base — layered so Tailwind utilities can override (e.g. rounded-full) */
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
 
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: 15px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-* {
-  border-radius: var(--radius);
-}
+  * {
+    border-radius: var(--radius);
+  }
 
-::selection {
-  background-color: var(--color-accent);
-  color: var(--color-bg);
-}
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-bg);
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
 
-a:hover {
-  text-decoration: underline;
-  text-decoration-color: var(--color-accent);
-}
+  a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+  }
 
-/* Focus */
-:focus {
-  outline: none;
-}
+  /* Focus */
+  :focus {
+    outline: none;
+  }
 
-:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-accent);
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
 }
 
 /* Sections */
 section {
   scroll-margin-top: 72px;
+}
+
+/* Boot overlay: hidden before hydration when this session already booted */
+html[data-boot="done"] [data-boot-overlay] {
+  display: none;
+}
+
+/* CRT scanlines: 2px lines at 6%, only while data-crt="on" */
+html[data-crt="on"] .crt-scanlines {
+  display: block;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-text) 6%, transparent) 0 2px,
+    transparent 2px 4px
+  );
 }
 
 /* Reduced motion */

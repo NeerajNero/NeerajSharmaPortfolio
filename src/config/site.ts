@@ -8,11 +8,15 @@ export interface NavItem {
 export interface Identity {
   displayName: string;
   legalName: string;
+  /** Avatar fallback letters. */
+  initials: string;
   handle: string;
   title: string;
   company: string;
   location: string;
   experienceYears: string;
+  /** Status dot label on the player card. */
+  status: string;
   oneLiner: string;
   email: string;
 }
@@ -20,6 +24,8 @@ export interface Identity {
 export interface Links {
   github: string;
   linkedin: string;
+  /** Route of the HTML résumé page. */
+  resume: string;
   resumePdf: string;
   sourceRepo: string;
 }
@@ -72,9 +78,15 @@ export interface GamingConfig {
   blog: { name: string; url: string };
 }
 
+export interface BootConfig {
+  /** Lines typed by the boot overlay, in order. */
+  lines: string[];
+}
+
 export interface SiteConfig {
   domain: string;
   nav: NavItem[];
+  boot: BootConfig;
   identity: Identity;
   links: Links;
   experience: Role[];
@@ -100,14 +112,26 @@ export const site: SiteConfig = {
     { id: "ping", label: "ping" },
   ],
 
+  boot: {
+    lines: [
+      "neerajnero.com",
+      "loading player profile ......... ok",
+      "mounting quest log ............. ok",
+      "syncing trophy case ............ ok",
+      "press any key",
+    ],
+  },
+
   identity: {
     displayName: "Neeraj Sharma",
     legalName: "Neeraj Kumar Sharma U",
+    initials: "NN",
     handle: "NeerajNero",
     title: "Software Engineer 2",
     company: "GeekyAnts",
     location: "Bangalore",
     experienceYears: "4+ years",
+    status: "online",
     oneLiner:
       "Full-stack engineer who builds backend systems, auth flows, and AI-assisted workflows in TypeScript. Plays on PC, PlayStation and Xbox.",
     email: "neerajnero9066@gmail.com",
@@ -116,6 +140,7 @@ export const site: SiteConfig = {
   links: {
     github: "https://github.com/NeerajNero",
     linkedin: "https://www.linkedin.com/in/neeraj-sharma-13610716a/",
+    resume: "/resume",
     resumePdf: "/resume.pdf",
     sourceRepo: "https://github.com/NeerajNero/portfolio",
   },
