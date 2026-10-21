@@ -24,7 +24,7 @@ Every env var below is set in Project → Settings → Environment Variables for
 | `GITHUB_TOKEN` | no | github.com → Settings → Developer settings → tokens; no scopes needed for public repos | side quests use the 60/hour anonymous limit |
 | `STEAM_API_KEY` | no | <https://steamcommunity.com/dev/apikey> | Steam card shows the snapshot |
 | `STEAM_ID64` | no | your profile URL or <https://steamid.io>; profile and "Game details" must be Public | Steam card shows the snapshot |
-| `OPENXBL_API_KEY` | no | <https://xbl.io> dashboard, signed in with the Microsoft account that owns the gamertag | Xbox card shows the snapshot |
+| `OPENXBL_API_KEY` | no | <https://xbl.io> dashboard, signed in with the Microsoft account that owns the gamertag; free tier is 60 calls per 5 minutes | Xbox card shows the snapshot |
 | `PSN_NPSSO` | no | sign in at playstation.com, then open <https://ca.account.sony.com/api/v1/ssocookie>; expires about every two months | PlayStation card shows the snapshot and the log says `[psn] auth failed — refresh PSN_NPSSO` |
 
 `.env` and `.env.local` are git-ignored by the `.env*` rule; `.env.example` is tracked and lists every name with empty values. The repo must never contain a value.

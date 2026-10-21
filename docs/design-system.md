@@ -93,3 +93,20 @@ Because the four children are subgrid items, row 3 takes the tallest card's heig
 
 ### Nav (`nav.tsx`)
 Active section = the last section whose top has crossed the 72px nav line; at the page bottom, the section named in the URL hash if visible, else the last one. Recomputed on `IntersectionObserver` callbacks (thresholds 0 to 1 by 0.1), `scrollend`, `hashchange`, link clicks (700 ms settle timer) and `usePathname()` changes.
+
+## Motion
+
+No motion library. Every animation checks `prefers-reduced-motion` (the global CSS also zeroes animation and transition durations) and runs at most once per page view.
+
+| Animation | File | Trigger | Duration | Reduced motion |
+|---|---|---|---|---|
+| Boot typing, hold, fade | `boot-sequence.tsx` | first visit per tab session | ≈1.25 s typing + 250 ms + 250 ms | full text for 400 ms, then an instant hide |
+| CRT toast | `crt-overlay.tsx` | Konami or five avatar taps | shown 2 s | unchanged (no motion involved) |
+| Trophy-case skeleton glyphs | `trophy-case-skeleton.tsx`, `.sync-glyph` in `globals.css` | while `<TrophyCase/>` is suspended | 1 s loop, five glyphs filled in turn at 200 ms steps | all glyphs empty, static |
+| Score count-up | `score-counter.tsx` | aggregate number at least half in view, once | 900 ms cubic ease-out | final number only |
+| XP bar fill | `xp-bar.tsx` | row in view, once | 600 ms ease-out `scaleX` from 0 | full bar, no transition |
+
+The server always renders the final state (the real number, the full bar), so no-JS visitors and crawlers see the data. Counters reserve their width with `tabular-nums` and a `min-width` in `ch`. XP bars only render when the row has a progress value, and are muted when the card is a snapshot.
+
+Note on the skeleton: with the current caching model the home page is prerendered with the arcade data in it, so the skeleton is never shown on a normal request; see [architecture.md](architecture.md#caching-model).
+

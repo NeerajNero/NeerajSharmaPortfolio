@@ -11,7 +11,7 @@
 | Build fails with no env | Should never happen: every adapter returns the snapshot without a key. If it does, an adapter is reaching the network before the key check. | Run `env -u STEAM_API_KEY -u STEAM_ID64 -u OPENXBL_API_KEY -u PSN_NPSSO -u GITHUB_TOKEN pnpm build` locally and read the stack. |
 | OG image missing or blank | `/opengraph-image` is a request-time route reading `src/app/fonts/*.ttf`; if the files are not in the function bundle it throws. | Keep `outputFileTracingIncludes` in `next.config.ts`; confirm the two TTFs are committed. |
 | Home page shows stale numbers | Expected for up to an hour; expire is one day. | Redeploy to force a fresh prerender. |
-| Xbox card shows the snapshot right after many manual API calls | OpenXBL throttled the account; its 200 body carries no settings, so `assertUsable` refused it. | Wait for the hour window; do not loosen the guard. |
+| Xbox card shows the snapshot right after many manual API calls | OpenXBL throttled the key (60 calls per 5 minutes); its 200 body carries a `currentRequests`/`maxRequests` object instead of settings, so the shape guard refused it. | Wait five minutes; do not loosen the guard. If it happened during `next build`, redeploy after the window. |
 | Nav tick lands on the wrong section after a jump | Smooth scroll outlasted the 700 ms settle timer on a very long page. | Raise `SETTLE_MS` in `nav.tsx`; `scrollend` normally corrects it. |
 
 ## Renew the PSN NPSSO
@@ -44,7 +44,7 @@ If an adapter returns `source: "static"` in dev, read the `[platform]` line in t
 | Service | Ceiling | This site uses |
 |---|---|---|
 | Steam Web API | 100,000 calls/day per key | up to 8 per hour |
-| OpenXBL free tier | about 150 calls/hour | 2 per hour |
+| OpenXBL free tier | 60 calls per 300 s per key (observed in a throttled response: `"maxRequests":60,"periodInSeconds":300`) | 2 per hour |
 | PlayStation (unofficial, via psn-api) | no published limit; aggressive use risks the account | 2 data calls + auth per hour |
 | GitHub REST | 60/hour unauthenticated, 5,000/hour with a token | 1 per hour |
 

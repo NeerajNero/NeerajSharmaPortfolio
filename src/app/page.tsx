@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { BootSequence } from "@/components/boot-sequence";
 import { Campaign } from "@/components/campaign";
 import { Loadout } from "@/components/loadout";
@@ -6,6 +7,7 @@ import { QuestLog } from "@/components/quest-log";
 import { SectionHeader } from "@/components/section-header";
 import { SendPing } from "@/components/send-ping";
 import { TrophyCase } from "@/components/trophy-case";
+import { TrophyCaseSkeleton } from "@/components/trophy-case-skeleton";
 
 export default function Home() {
   return (
@@ -33,7 +35,9 @@ export default function Home() {
 
         <section id="arcade" aria-labelledby="arcade-title">
           <SectionHeader id="arcade" title="Arcade" />
-          <TrophyCase />
+          <Suspense fallback={<TrophyCaseSkeleton />}>
+            <TrophyCase />
+          </Suspense>
         </section>
 
         <section id="ping" aria-labelledby="ping-title">

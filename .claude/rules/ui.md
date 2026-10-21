@@ -19,6 +19,7 @@ The design rules below apply to every UI change. Re-read them before saying a ch
 
 Also:
 - No new dependencies without a one-line justification in the commit message. There is no component, icon or animation library and none is wanted.
+- Animations answer an action or a data reveal, run once, and respect prefers-reduced-motion; no new dependency for motion.
 - Tokens come from `@theme` in `src/app/globals.css`; no hard-coded colours except the four trophy-tier dots in `platform-card.tsx`.
 - Server components by default; `"use client"` only for state or browser APIs (today: boot, nav, konami, crt overlay).
 - Content comes from `src/config/site.ts`; components render, they do not contain copy.

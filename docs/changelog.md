@@ -27,4 +27,7 @@ All commits so far, newest last. Dates are commit dates.
 - `e2b6940` 2026-10-21 arcade: align platform cards — subgrid rows, shared label column, PSN tag on meta line, fixed month names
 
 ## Docs
-- (this commit) docs: operating guide, docs folder, path rules — `CLAUDE.md` rewritten as the operating guide, spec frozen at `docs/spec.md`, `docs/` created, `.claude/rules/` added, public README rewritten
+- `f4636a3` 2026-10-21 docs: operating guide, docs folder, path rules — `CLAUDE.md` rewritten as the operating guide, spec frozen at `docs/spec.md`, `docs/` created, `.claude/rules/` added, public README rewritten
+
+## Motion
+- (this commit) motion: arcade loader, count-up, xp bars — Suspense skeleton for the trophy case, aggregate numbers count up once in view, 2px XP bars under progress lines; all respect reduced motion, no new dependency

@@ -1,7 +1,7 @@
 import { PlatformCard } from "@/components/platform-card";
+import { ScoreCounter } from "@/components/score-counter";
 import { site } from "@/config/site";
 import { getTrophyCase } from "@/lib/gaming";
-import { formatNumber } from "@/lib/gaming/format";
 import type { PlatformId } from "@/lib/gaming/types";
 
 export async function TrophyCase() {
@@ -22,7 +22,7 @@ export async function TrophyCase() {
         {numbers.map((n) => (
           <div key={n.id}>
             <dd className={`font-display text-[22px] leading-[1.4] ${isLive(n.id) ? "text-accent" : "text-muted"}`}>
-              {formatNumber(n.value)}
+              <ScoreCounter value={n.value ?? 0} />
             </dd>
             <dt className="text-[13px] text-muted">{site.gaming.labels[n.id].aggregate}</dt>
           </div>

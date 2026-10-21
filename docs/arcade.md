@@ -53,7 +53,7 @@ Images are `https://cdn.cloudflare.steamstatic.com/steam/apps/<appid>/header.jpg
 ## Xbox (`xbox.ts`, OpenXBL)
 
 - Env: `OPENXBL_API_KEY`. Headers: `X-Authorization`, `Accept: application/json`, `Accept-Language: en-US`.
-- Calls per hour: 2 (`/api/v2/account`, `/api/v2/player/titleHistory`). Free tier is about 150/h.
+- Calls per hour: 2 (`/api/v2/account`, `/api/v2/player/titleHistory`). The free tier allows 60 calls per 300 s; a throttled response is still HTTP 200 with a `{"content":{"currentRequests":…,"maxRequests":60,"periodInSeconds":300}}` body, which the shape guard turns into a snapshot fallback.
 - Content wrapper: every OpenXBL response is `{ "content": {...}, "code": 200 }`. `unwrap()` reads `content` when present and accepts the bare shape too.
 - Account: `profileUsers[0].settings[]` → `Gamertag`, `Gamerscore`. No `Gamertag` → `ShapeError` with a redacted body excerpt (this is what an OpenXBL rate-limit body looks like).
 - Title filter (`isXboxTitle`): the Xbox PC app logs Steam games launched through the Game Bar into title history with `devices: ["Win32"]`, no `pfn`, zero gamerscore. A title is kept when any device is in `XboxSeries, XboxOne, Xbox360, PC, Mobile`; with no `devices` array it falls back to a non-empty `pfn` or `achievement.totalGamerscore > 0`. On the owner's account this drops 83 of 191 titles. The `titles` headline is the filtered count.

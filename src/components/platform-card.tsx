@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { XpBar } from "@/components/xp-bar";
 import { site } from "@/config/site";
 import { shortDate, sourceLabel } from "@/lib/gaming/format";
 import { RECENT_SHOWN } from "@/lib/gaming/shared";
@@ -81,6 +82,9 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
                 <p className="truncate text-[13px]">{game.name}</p>
                 {meta.length > 0 ? (
                   <p className="text-[13px] text-muted">{meta.join("  ")}</p>
+                ) : null}
+                {game.progress !== undefined ? (
+                  <XpBar progress={game.progress} muted={stats.source === "static"} />
                 ) : null}
               </div>
             </li>
