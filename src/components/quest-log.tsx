@@ -14,7 +14,7 @@ export async function QuestLog() {
         <SubHeading>Main quests</SubHeading>
         <ul className="mt-2 divide-y divide-line border-t border-line">
           {site.featured.map((project) => (
-            <li key={project.repo} className="py-4">
+            <li key={project.repo} className="quest-row relative py-4 pl-5">
               <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 <a href={project.repo} rel="noopener">
                   {project.name}
@@ -34,7 +34,7 @@ export async function QuestLog() {
             {sideQuests.map((repo) => (
               <li
                 key={repo.url}
-                className="flex flex-col gap-y-0.5 py-2 md:grid md:grid-cols-[240px_110px_minmax(0,1fr)] md:items-baseline md:gap-x-4"
+                className="quest-row quest-row-compact relative flex flex-col gap-y-0.5 py-2 pl-5 md:grid md:grid-cols-[240px_110px_minmax(0,1fr)] md:items-baseline md:gap-x-4"
               >
                 <a href={repo.url} rel="noopener" className="truncate">
                   {repo.name}

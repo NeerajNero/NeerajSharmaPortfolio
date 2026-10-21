@@ -59,10 +59,10 @@ Interpretations already made: the player section has an `h1` and no HUD tab; the
 | `trophy-case.tsx` | server, async | aggregate `dl` (platinums, gamerscore, Steam hours), 3-column card grid with four explicit rows, blog row | none |
 | `platform-card.tsx` | server | one card: title + source label, handle, stats block, game list | `stats: PlatformStats` |
 | `send-ping.tsx` | server | three label/link rows | none |
-| `nav.tsx` | client | sticky header, brand, six `next/link`s with accent tick on the active one | none |
+| `nav.tsx` | client | sticky header, brand, six `next/link`s and one sliding accent bar under the active one | none |
 | `boot-sequence.tsx` | client | full-viewport overlay with typed lines and caret | none |
 | `konami.tsx` | client | nothing | none |
-| `crt-overlay.tsx` | client | `.crt-scanlines` div (shown via CSS), `role="status"` toast | none |
+| `crt-overlay.tsx` | client | `.crt-scanlines` and `.crt-field` divs (shown via CSS), `role="status"` toast | none |
 
 ## Platform card layout
 
@@ -87,12 +87,12 @@ Because the four children are subgrid items, row 3 takes the tallest card's heig
 ### Konami and CRT (`konami.tsx`, `crt-overlay.tsx`, `src/lib/crt.ts`)
 - Keys `ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight b a` (letters compared lower-case) call `toggleCrt()`.
 - Five clicks on `[data-avatar]` within 2000 ms do the same, for touch.
-- `toggleCrt()` sets or removes `data-crt="on"` on `<html>`, writes `localStorage.crt = "on" | "off"`, and dispatches a `crtchange` `CustomEvent` with the boolean.
+- `toggleCrt()` sets or removes `data-crt="on"` on `<html>`, writes `localStorage.crt = "on" | "off"`, sets `data-crt-anim` for the power sequence unless reduced motion is on, and dispatches a `crtchange` `CustomEvent` with the boolean.
 - `CrtOverlay` listens for `crtchange`, shows "crt mode on" / "crt mode off" bottom-left for 2000 ms. The scanlines are a CSS rule on `html[data-crt="on"] .crt-scanlines`: 2px lines of text colour at 6% every 4px, `pointer-events-none`, `z-[60]`.
 - On load, `PRE_PAINT_SCRIPT` restores `data-crt` from `localStorage` before first paint. `<html>` has `suppressHydrationWarning` for that reason.
 
 ### Nav (`nav.tsx`)
-Active section = the last section whose top has crossed the 72px nav line; at the page bottom, the section named in the URL hash if visible, else the last one. Recomputed on `IntersectionObserver` callbacks (thresholds 0 to 1 by 0.1), `scrollend`, `hashchange`, link clicks (700 ms settle timer) and `usePathname()` changes.
+Active section = the last section whose top has crossed the 72px nav line; at the page bottom, the section named in the URL hash if visible, else the last one. Recomputed on `IntersectionObserver` callbacks (thresholds 0 to 1 by 0.1), `scrollend`, `hashchange`, link clicks (700 ms settle timer) and `usePathname()` changes. The tick is a single `.nav-tick` bar that slides to the active link (see Motion).
 
 ## Motion
 
@@ -105,6 +105,11 @@ No motion library. Every animation checks `prefers-reduced-motion` (the global C
 | Trophy-case skeleton glyphs | `trophy-case-skeleton.tsx`, `.sync-glyph` in `globals.css` | while `<TrophyCase/>` is suspended | 1 s loop, five glyphs filled in turn at 200 ms steps | all glyphs empty, static |
 | Score count-up | `score-counter.tsx` | aggregate number at least half in view, once | 900 ms cubic ease-out | final number only |
 | XP bar fill | `xp-bar.tsx` | row in view, once | 600 ms ease-out `scaleX` from 0 | full bar, no transition |
+| Quest-row cursor | `.quest-row::before` in `globals.css` | row hovered (pointer devices only), its link focused, or pressed on touch | blinks 500 ms on / 500 ms off via `steps(1)` while visible | visible, no blink |
+| Sliding nav tick | `.nav-tick` in `nav.tsx` | active section changes | 200 ms ease-out on `transform` and `width`; first placement instant; a partly hidden link in the mobile row is scrolled to its nearest edge with `list.scrollTo` (smooth) | instant moves, no transition; the row scroll is instant |
+| CRT power-on / off | `.crt-field` and `.crt-scanlines` in `globals.css`, set by `setCrt()` | user toggles CRT (Konami or five avatar taps), never on a persisted reload | on: 2 px line at the viewport centre expands to full height over 300 ms, scanlines fade in during the last 100 ms; off: scanlines fade 100 ms, field collapses to the line over 200 ms, line fades 80 ms | instant state change; `data-crt-anim` is never set |
+
+Interaction motion details: quest rows reserve a 20 px left gutter so the cursor never shifts layout, and hover is gated by `@media (hover: hover)` so touch gets no sticky state. The nav tick is one absolutely positioned bar inside the scrolling list, moved imperatively to the active link's `offsetLeft`/`offsetWidth`, re-measured on window resize and by a `ResizeObserver` on the list and the active link. The CRT sequence is driven by `data-crt-anim="on" | "off"` on `<html>`, which `setCrt()` sets only for a user toggle and the field's `animationend` clears; the pre-paint script restores a persisted CRT state without it.
 
 The server always renders the final state (the real number, the full bar), so no-JS visitors and crawlers see the data. Counters reserve their width with `tabular-nums` and a `min-width` in `ch`. XP bars only render when the row has a progress value, and are muted when the card is a snapshot.
 

@@ -11,6 +11,13 @@ export function setCrt(on: boolean): void {
   const html = document.documentElement;
   if (on) html.setAttribute("data-crt", "on");
   else html.removeAttribute("data-crt");
+  // Power-on/off animation only for a user toggle; the pre-paint restore in
+  // PRE_PAINT_SCRIPT sets the steady state without it. Cleared on animationend.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    html.removeAttribute("data-crt-anim");
+  } else {
+    html.setAttribute("data-crt-anim", on ? "on" : "off");
+  }
   try {
     localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
   } catch {

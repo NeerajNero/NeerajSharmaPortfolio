@@ -33,4 +33,7 @@ All commits so far, newest last. Dates are commit dates.
 - `6bdc1b9` 2026-10-21 motion: arcade loader, count-up, xp bars — Suspense skeleton for the trophy case, aggregate numbers count up once in view, 2px XP bars under progress lines; all respect reduced motion, no new dependency
 
 ## Cadence
-- (this commit) arcade: daily cadence, revalidate route — `cacheLife("days")` with tags `arcade` and `github`, Steam "now playing" dropped, source label "synced 21 Oct, 13:42 IST", `POST /api/revalidate` guarded by `REVALIDATE_SECRET`
+- `ca91de2` 2026-10-21 arcade: daily cadence, revalidate route — `cacheLife("days")` with tags `arcade` and `github`, Steam "now playing" dropped, source label "synced 21 Oct, 13:42 IST", `POST /api/revalidate` guarded by `REVALIDATE_SECRET`
+
+## Motion 2
+- (this commit) motion: menu cursor, sliding nav tick, crt power-on — blinking ▶ cursor on quest rows (hover, focus, press), one sliding nav indicator, CRT power-on/off sequence on user toggles only; all respect reduced motion, no new dependency

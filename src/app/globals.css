@@ -118,6 +118,131 @@ html[data-crt="on"] .crt-scanlines {
   }
 }
 
+/* Quest rows: a ▶ cursor in a reserved 20px gutter, blinking while the row
+   is hovered (pointer devices only), focused from the keyboard, or pressed */
+.quest-row {
+  --row-pad: 1rem;
+}
+
+.quest-row-compact {
+  --row-pad: 0.5rem;
+}
+
+.quest-row::before {
+  content: "▶";
+  position: absolute;
+  left: 0;
+  /* centre a 13px glyph on the 15px first line */
+  top: calc(var(--row-pad) + 1.65px);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quest-row:focus-within::before,
+.quest-row:active::before {
+  opacity: 1;
+  animation: cursor-blink 1s steps(1, end) infinite;
+}
+
+@media (hover: hover) {
+  .quest-row:hover::before {
+    opacity: 1;
+    animation: cursor-blink 1s steps(1, end) infinite;
+  }
+}
+
+@keyframes cursor-blink {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Nav tick: one bar that slides between links */
+.nav-tick {
+  transition:
+    transform 200ms ease-out,
+    width 200ms ease-out;
+  will-change: transform, width;
+}
+
+/* CRT power-on/off: a 2px line at the viewport centre expands into a faint
+   field and clears while the scanlines fade in; reversed on power-off.
+   Driven by data-crt-anim, which the toggle sets and animationend clears. */
+html[data-crt-anim] .crt-field {
+  display: block;
+}
+
+html[data-crt-anim="on"] .crt-field {
+  animation: crt-power-on 300ms ease-out both;
+}
+
+html[data-crt-anim="on"] .crt-scanlines {
+  animation: crt-scan-in 100ms linear 200ms both;
+}
+
+html[data-crt-anim="off"] .crt-field {
+  animation: crt-power-off 280ms ease-in both;
+}
+
+html[data-crt-anim="off"] .crt-scanlines {
+  display: block;
+  animation: crt-scan-out 100ms linear both;
+}
+
+@keyframes crt-power-on {
+  0% {
+    clip-path: inset(calc(50% - 1px) 0);
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.18;
+  }
+  100% {
+    clip-path: inset(0 0);
+    opacity: 0;
+  }
+}
+
+@keyframes crt-power-off {
+  0% {
+    clip-path: inset(0 0);
+    opacity: 0.18;
+  }
+  71% {
+    clip-path: inset(calc(50% - 1px) 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(calc(50% - 1px) 0);
+    opacity: 0;
+  }
+}
+
+@keyframes crt-scan-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes crt-scan-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -131,6 +256,19 @@ html[data-crt="on"] .crt-scanlines {
     animation-iteration-count: 1 !important;
     transition-duration: 0s !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The cursor stays visible instead of blinking */
+  .quest-row:focus-within::before,
+  .quest-row:active::before,
+  .quest-row:hover::before {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* No power-on sequence: the toggle never sets data-crt-anim here */
+  .crt-field {
+    display: none !important;
   }
 }
 
