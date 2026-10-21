@@ -45,7 +45,9 @@ function readSettings(raw: unknown): Map<string, string> {
 
 /**
  * progressPercentage when present and non-zero; otherwise derived from
- * currentGamerscore / totalGamerscore when there is any gamerscore to count.
+ * currentGamerscore / totalGamerscore. A genuine 0% needs a real total;
+ * with no total there is no achievement data, so no value is reported and
+ * the card omits the percentage.
  */
 function readProgress(achievement: unknown): number | undefined {
   if (!isRecord(achievement)) return undefined;
@@ -53,8 +55,8 @@ function readProgress(achievement: unknown): number | undefined {
   if (percentage !== undefined && percentage > 0) return Math.round(percentage);
   const current = asNumber(achievement.currentGamerscore) ?? 0;
   const total = asNumber(achievement.totalGamerscore) ?? 0;
-  if (current > 0 && total > 0) return Math.round((current / total) * 100);
-  return percentage === undefined ? undefined : 0;
+  if (total <= 0) return undefined;
+  return current > 0 ? Math.round((current / total) * 100) : 0;
 }
 
 /** First allowed URL in a title's images array, when displayImage is empty. */

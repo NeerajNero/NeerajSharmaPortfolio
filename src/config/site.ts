@@ -376,8 +376,8 @@ export const site: SiteConfig = {
       },
       psn: {
         id: "psn",
-        // TODO: replace with the real PSN online ID; the trophy API never returns it.
-        handle: "PSN_ONLINE_ID_HERE",
+        // The trophy API never returns the online ID, so it is set here.
+        handle: "Neeraj_Nero",
         headline: [
           { label: "level", value: "607" },
           { label: "bronze", value: "7,003" },
