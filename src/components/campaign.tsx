@@ -29,14 +29,19 @@ export function Campaign() {
   return (
     <ol className="mt-6">
       {entries.map((entry) => (
-        <li key={entry.key} className="grid md:grid-cols-[160px_minmax(0,1fr)]">
-          <span className="hidden text-[13px] text-muted md:block md:pt-[2px]">{entry.dates}</span>
-          <div className="relative border-l border-line pb-8 pl-6">
-            <span
-              aria-hidden="true"
-              className="absolute -left-[3.5px] top-[0.55em] h-[6px] w-[6px] rounded-none bg-accent"
-            />
-            <span className="block text-[13px] text-muted md:hidden">{entry.dates}</span>
+        /* Mobile: the rule sits on the row and the date stacks above the role.
+           Desktop: the date takes the 160px column and the rule moves to the
+           content column, so the date is rendered once in either layout. */
+        <li
+          key={entry.key}
+          className="relative grid border-l border-line pl-6 md:grid-cols-[160px_minmax(0,1fr)] md:border-0 md:pl-0"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute -left-[3.5px] top-[0.55em] h-[6px] w-[6px] rounded-none bg-accent md:left-[156.5px]"
+          />
+          <span className="text-[13px] text-muted md:pt-[2px]">{entry.dates}</span>
+          <div className="pb-8 md:border-l md:border-line md:pl-6">
             <p>{entry.heading}</p>
             <p className="text-[13px] text-muted">{entry.sub}</p>
             {entry.bullets.length > 0 ? (

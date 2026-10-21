@@ -71,7 +71,6 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
                     alt=""
                     width={IMAGE_PX}
                     height={IMAGE_PX}
-                    sizes={`${IMAGE_PX}px`}
                     className="h-12 w-12 shrink-0 border border-line object-cover"
                   />
                 ) : null}
