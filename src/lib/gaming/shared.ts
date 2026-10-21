@@ -12,12 +12,19 @@ export function snapshot(id: PlatformId): PlatformStats {
   return { ...site.gaming.static[id], source: "static" };
 }
 
-/** Only pass images next/image is configured to serve; anything else is dropped. */
+/**
+ * Only pass images next/image is configured to serve; anything else is
+ * dropped. OpenXBL hands out store artwork as http://, and every allowed host
+ * serves https, so the scheme is upgraded rather than rejected.
+ */
 export function safeImage(url: unknown): string | undefined {
   if (typeof url !== "string" || url.length === 0) return undefined;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" && allowedHosts.has(parsed.hostname) ? url : undefined;
+    if (!allowedHosts.has(parsed.hostname)) return undefined;
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return undefined;
+    parsed.protocol = "https:";
+    return parsed.toString();
   } catch {
     return undefined;
   }
@@ -114,6 +121,11 @@ export function describeError(error: unknown, secrets: (string | undefined)[] = 
     return excerpt(text, secrets);
   }
   return excerpt(String(error), secrets);
+}
+
+/** Strip ® and ™ and collapse whitespace: "Assassin's Creed® Mirage" → "Assassin's Creed Mirage". */
+export function cleanName(name: string): string {
+  return name.replace(/[®™]/g, "").replace(/\s+/g, " ").trim();
 }
 
 export function formatCount(value: number): string {

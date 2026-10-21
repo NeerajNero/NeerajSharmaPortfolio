@@ -3,6 +3,7 @@ import {
   asNumber,
   asString,
   assertUsable,
+  cleanName,
   fetchJson,
   formatCount,
   isRecord,
@@ -103,7 +104,8 @@ export async function getSteamStats(): Promise<PlatformStats> {
       : undefined;
   const handle = asString(player?.personaname);
   if (!handle) throw new ShapeError("GetPlayerSummaries returned no personaname");
-  const nowPlaying = asString(player?.gameextrainfo);
+  const rawNowPlaying = asString(player?.gameextrainfo);
+  const nowPlaying = rawNowPlaying ? cleanName(rawNowPlaying) : undefined;
 
   const owned = new Map<number, OwnedGame>();
   for (const game of readGames(ownedBody)) {
@@ -128,7 +130,7 @@ export async function getSteamStats(): Promise<PlatformStats> {
   const recent: GameEntry[] = await Promise.all(
     recentRaw.map(async (game) => {
       const appid = asNumber(game.appid);
-      const name = asString(game.name) ?? "Unknown game";
+      const name = cleanName(asString(game.name) ?? "Unknown game");
       const minutes = asNumber(game.playtime_forever) ?? 0;
       const progress =
         appid === undefined

@@ -3,6 +3,8 @@ import {
   asNumber,
   asString,
   assertUsable,
+  cleanName,
+  excerpt,
   fetchJson,
   formatCount,
   isRecord,
@@ -99,7 +101,7 @@ function readTitles(raw: unknown): Title[] {
     const history = isRecord(raw.titleHistory) ? raw.titleHistory : undefined;
     const lastPlayed = asString(history?.lastTimePlayed);
     titles.push({
-      name,
+      name: cleanName(name),
       image: safeImage(raw.displayImage) ?? firstImage(raw.images),
       lastPlayed: lastPlayed && !Number.isNaN(Date.parse(lastPlayed)) ? lastPlayed : undefined,
       progress: readProgress(raw.achievement),
@@ -126,7 +128,9 @@ export async function getXboxStats(): Promise<PlatformStats> {
 
   const settings = readSettings(accountBody);
   const handle = settings.get("Gamertag");
-  if (!handle) throw new ShapeError("account returned no Gamertag");
+  if (!handle) {
+    throw new ShapeError(`account returned no Gamertag: ${excerpt(JSON.stringify(accountBody), [key])}`);
+  }
   const parsedScore = Number(settings.get("Gamerscore"));
   const gamerscore = Number.isFinite(parsedScore) ? parsedScore : 0;
 

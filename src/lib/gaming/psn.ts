@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
 import {
   asNumber,
   assertUsable,
+  cleanName,
   describeError,
   formatCount,
   isRecord,
@@ -73,11 +74,8 @@ async function authorize(npsso: string): Promise<AuthorizationPayload> {
 
 /** "Mafia III: Definitive Edition for PS5®" → "Mafia III: Definitive Edition". */
 export function cleanTitleName(name: string): string {
-  return name
-    .replace(/[®™]/g, "")
-    .replace(/\s+for\s+PS[45]\s*$/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Marks first: "… for PS5®" only matches the suffix once the ® is gone.
+  return cleanName(name).replace(/\s+for\s+PS[45]\s*$/i, "").trim();
 }
 
 /** "PS5", "PS4" or "PS4,PS5" → the newest platform listed. */
