@@ -71,10 +71,10 @@ Interpretations already made: the player section has an `h1` and no HUD tab; the
 
 `trophy-case.tsx` wraps the cards in `grid grid-cols-[minmax(0,1fr)] md:grid-cols-[repeat(3,minmax(0,1fr))] md:grid-rows-[auto_auto_auto_auto]`. Each `platform-card.tsx` article is `flex flex-col gap-4` on mobile and `md:grid md:row-span-4 md:grid-rows-subgrid` on desktop, with exactly four children in this order:
 
-1. title row (`h3` platform name, source label right)
+1. title row (`h3` platform name, source label right: "snapshot" or "synced 21 Oct", full time in its `title`)
 2. handle
 3. stats block (`dl` with a 140px label column, optional tier dots)
-4. game list (`ul` with `border-t`, up to `RECENT_SHOWN` = 3 rows of 48px thumbnail, truncated name, meta line "progress  date  tag")
+4. game list (`ul` with `border-t`, up to `RECENT_SHOWN` = 3 rows of 48px thumbnail (centred crop, or left-anchored for a Steam header banner), truncated name, meta line "progress  date  tag")
 
 Because the four children are subgrid items, row 3 takes the tallest card's height and every list divider starts at the same y. Every child and the article carry `min-w-0`; without it, non-wrapping game names widen the grid track and spill past the card.
 

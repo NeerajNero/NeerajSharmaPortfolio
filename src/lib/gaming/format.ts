@@ -25,13 +25,22 @@ function dayMonth(date: Date): string | undefined {
   return month && day ? `${day} ${month}` : undefined;
 }
 
-/** "snapshot" for static data, "synced 21 Oct, 13:42 IST" for live data. */
+/** Visible text: "snapshot" for static data, "synced 21 Oct" for live data. */
 export function sourceLabel(source: "live" | "static", fetchedAt: string): string {
   if (source === "static") return "snapshot";
   const date = new Date(fetchedAt);
   if (Number.isNaN(date.getTime())) return "synced";
   const dm = dayMonth(date);
-  return dm ? `synced ${dm}, ${timeFormat.format(date)} IST` : "synced";
+  return dm ? `synced ${dm}` : "synced";
+}
+
+/** Title attribute for a live label: "21 Oct, 14:26 IST". Undefined for snapshots. */
+export function sourceTitle(source: "live" | "static", fetchedAt: string): string | undefined {
+  if (source === "static") return undefined;
+  const date = new Date(fetchedAt);
+  if (Number.isNaN(date.getTime())) return undefined;
+  const dm = dayMonth(date);
+  return dm ? `${dm}, ${timeFormat.format(date)} IST` : undefined;
 }
 
 /** "20 Sep 2026" in Asia/Kolkata. */

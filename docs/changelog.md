@@ -39,4 +39,7 @@ All commits so far, newest last. Dates are commit dates.
 - `1d8a7e7` 2026-10-21 motion: menu cursor, sliding nav tick, crt power-on — blinking ▶ cursor on quest rows (hover, focus, press), one sliding nav indicator, CRT power-on/off sequence on user toggles only; all respect reduced motion, no new dependency
 
 ## Motion 3
-- (this commit) motion: achievements, one-liner — five achievements with a localStorage engine, one shared toast queue (CRT toast moved into it), footer counter with details and reset, new one-liner
+- `f0af523` 2026-10-21 motion: achievements, one-liner — five achievements with a localStorage engine, one shared toast queue (CRT toast moved into it), footer counter with details and reset, new one-liner
+
+## Arcade visuals
+- (this commit) arcade: steam box art, shorter sync label — Steam rows use `library_600x900.jpg` when a HEAD probe says it exists, else the header cropped from the left; the card label is "synced 21 Oct" with the full time in a `title`

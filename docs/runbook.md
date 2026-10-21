@@ -54,7 +54,7 @@ If an adapter returns `source: "static"` in dev, read the `[platform]` line in t
 
 | Service | Ceiling | This site uses |
 |---|---|---|
-| Steam Web API | 100,000 calls/day per key | up to 8 per refresh |
+| Steam Web API | 100,000 calls/day per key | up to 8 per refresh, plus up to 3 CDN HEAD probes |
 | OpenXBL free tier | 60 calls per 300 s per key (observed in a throttled response: `"maxRequests":60,"periodInSeconds":300`) | 2 per refresh |
 | PlayStation (unofficial, via psn-api) | no published limit; aggressive use risks the account | 2 data calls + auth per refresh |
 | GitHub REST | 60/hour unauthenticated, 5,000/hour with a token | 1 per refresh |

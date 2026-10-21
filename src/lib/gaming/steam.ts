@@ -8,6 +8,7 @@ import {
   formatCount,
   isRecord,
   nowIso,
+  RECENT_SHOWN,
   safeImage,
   ShapeError,
   snapshot,
@@ -16,6 +17,29 @@ import type { GameEntry, PlatformStats } from "@/lib/gaming/types";
 
 const BASE = "https://api.steampowered.com";
 const RECENT_COUNT = 5;
+const CDN = "https://cdn.cloudflare.steamstatic.com/steam/apps";
+
+/** Portrait box art (600x900). Not every app has it; the header (460x215) always exists. */
+export function libraryArt(appid: number): string {
+  return `${CDN}/${appid}/library_600x900.jpg`;
+}
+
+export function headerArt(appid: number): string {
+  return `${CDN}/${appid}/header.jpg`;
+}
+
+/** One HEAD per shown game, inside the daily cached scope; anything but 200 falls back to the header. */
+async function pickArt(appid: number, probe: boolean): Promise<string | undefined> {
+  if (probe) {
+    try {
+      const res = await fetch(libraryArt(appid), { method: "HEAD" });
+      if (res.ok) return safeImage(libraryArt(appid));
+    } catch {
+      // CDN unreachable for the probe: use the header
+    }
+  }
+  return safeImage(headerArt(appid));
+}
 
 interface OwnedGame {
   appid: number;
@@ -126,7 +150,7 @@ export async function getSteamStats(): Promise<PlatformStats> {
 
   const recentRaw = readGames(recentBody).filter(isRecord).slice(0, RECENT_COUNT);
   const recent: GameEntry[] = await Promise.all(
-    recentRaw.map(async (game) => {
+    recentRaw.map(async (game, index) => {
       const appid = asNumber(game.appid);
       const name = cleanName(asString(game.name) ?? "Unknown game");
       const minutes = asNumber(game.playtime_forever) ?? 0;
@@ -136,10 +160,7 @@ export async function getSteamStats(): Promise<PlatformStats> {
           : await achievementProgress(key, steamId, appid).catch(() => undefined);
       return {
         name,
-        image:
-          appid === undefined
-            ? undefined
-            : safeImage(`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`),
+        image: appid === undefined ? undefined : await pickArt(appid, index < RECENT_SHOWN),
         lastPlayed: appid === undefined ? undefined : owned.get(appid)?.lastPlayed,
         progress,
         hours: Math.round(minutes / 60),

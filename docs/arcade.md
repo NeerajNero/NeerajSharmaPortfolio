@@ -7,7 +7,7 @@ Three adapters behind one interface, cached for a day, never throwing out of `ge
 - Every cached function uses `cacheLife("days")`: revalidate after 24 hours, serve stale for up to a week while refreshing, 5-minute client router cache. A visitor never waits for an upstream call.
 - The three gaming caches carry `cacheTag("arcade")`; the GitHub fetch carries `cacheTag("github")`. `POST /api/revalidate` (see [runbook.md](runbook.md#force-a-refresh-after-a-gaming-session)) marks both stale with the `"max"` profile, so the next visit refreshes in the background.
 - Every deploy is also a pull: `next build` runs the adapters and bakes the result into the static shell.
-- Calls per day per platform at the daily cadence, excluding deploys and manual revalidation: Steam up to 8, Xbox 2, PlayStation 2 plus auth, GitHub 1.
+- Calls per day per platform at the daily cadence, excluding deploys and manual revalidation: Steam up to 11 (3 data, up to 5 achievement, up to 3 HEAD), Xbox 2, PlayStation 2 plus auth, GitHub 1.
 
 ## Types (`src/lib/gaming/types.ts`)
 
@@ -29,7 +29,7 @@ interface Aggregate { steamHours?; gamerscore?; platinums? }
 - `safeImage(url)` keeps only `IMAGE_HOSTS` hosts and upgrades `http` to `https`.
 - `cleanName()` strips ® and ™ and collapses whitespace; applied to every game name on all three platforms.
 - `RECENT_SHOWN = 3` is what the card shows; adapters return up to 5.
-- `format.ts`: `sourceLabel()` gives `"snapshot"` or `"synced 21 Oct, 13:42 IST"`; `shortDate()` gives `"20 Sep 2026"` in Asia/Kolkata from a fixed three-letter month array.
+- `format.ts`: `sourceLabel()` gives the visible `"snapshot"` or `"synced 21 Oct"`, `sourceTitle()` the full `"21 Oct, 14:26 IST"` for the label's `title` attribute; `shortDate()` gives `"20 Sep 2026"` in Asia/Kolkata from a fixed three-letter month array.
 - `index.ts`: `cachedSteam/Xbox/Psn` each do `"use cache"; cacheLife("days"); cacheTag("arcade")` and catch inside the scope via `warnAndSnapshot()`, so a failure caches the snapshot for the day (or until a manual revalidate) and is retried after. `getTrophyCase()` runs them with `Promise.allSettled` and maps rejections to snapshots too.
 
 Warning format, one line per failure, always prefixed by the module:
@@ -46,7 +46,7 @@ Secrets are redacted from the excerpt by `excerpt()`; Steam endpoints are named 
 ## Steam (`steam.ts`)
 
 - Env: `STEAM_API_KEY`, `STEAM_ID64`. Either missing → snapshot, no network.
-- Calls per refresh: 3 fixed + up to 5 achievement lookups = 8, at most once a day.
+- Calls per refresh: 3 fixed + up to 5 achievement lookups + up to 3 box-art HEAD probes = 11, at most once a day.
 
 | Endpoint | Purpose |
 |---|---|
@@ -55,7 +55,7 @@ Secrets are redacted from the excerpt by `excerpt()`; Steam endpoints are named 
 | `IPlayerService/GetRecentlyPlayedGames/v1` `count=5` | recent five, `playtime_forever` → hours |
 | `ISteamUserStats/GetPlayerAchievements/v1` per recent app | progress % = achieved / total; `success:false` or no achievements → no progress value |
 
-Images are `https://cdn.cloudflare.steamstatic.com/steam/apps/<appid>/header.jpg`. Headline: `hours`, `games`. Throws `ShapeError` when `personaname` is missing, then `assertUsable`. Requires the Steam profile and "Game details" set to Public.
+Images: portrait box art `https://cdn.cloudflare.steamstatic.com/steam/apps/<appid>/library_600x900.jpg`, probed with one HEAD request per shown game (at most `RECENT_SHOWN` = 3 per daily refresh, inside the cached scope); on anything but 200, or for games past the shown three, the always-present banner `…/<appid>/header.jpg`. The card crops box art centred and the banner from its left edge so the title text survives (`platform-card.tsx` keys on the `/header.jpg` suffix). Snapshots stay image-free. Headline: `hours`, `games`. Throws `ShapeError` when `personaname` is missing, then `assertUsable`. Requires the Steam profile and "Game details" set to Public.
 
 ## Xbox (`xbox.ts`, OpenXBL)
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { XpBar } from "@/components/xp-bar";
 import { site } from "@/config/site";
-import { shortDate, sourceLabel } from "@/lib/gaming/format";
+import { shortDate, sourceLabel, sourceTitle } from "@/lib/gaming/format";
 import { RECENT_SHOWN } from "@/lib/gaming/shared";
 import type { PlatformStats } from "@/lib/gaming/types";
 
@@ -27,7 +27,9 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
     <article className="flex min-w-0 flex-col gap-4 border border-line bg-surface p-5 md:grid md:row-span-4 md:grid-rows-subgrid">
       <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3>{label.name}</h3>
-        <span className="text-[13px] text-muted">{sourceLabel(stats.source, stats.fetchedAt)}</span>
+        <span className="text-[13px] text-muted" title={sourceTitle(stats.source, stats.fetchedAt)}>
+          {sourceLabel(stats.source, stats.fetchedAt)}
+        </span>
       </div>
 
       <p className="min-w-0 truncate text-[13px] text-muted">{stats.handle}</p>
@@ -69,7 +71,10 @@ export function PlatformCard({ stats }: { stats: PlatformStats }) {
                   alt=""
                   width={IMAGE_PX}
                   height={IMAGE_PX}
-                  className="h-12 w-12 shrink-0 border border-line object-cover"
+                  className={`h-12 w-12 shrink-0 border border-line object-cover ${
+                    // Steam header.jpg is a wide banner: keep its left edge where the title sits
+                    game.image.endsWith("/header.jpg") ? "object-left" : "object-center"
+                  }`}
                 />
               ) : null}
               <div className="min-w-0">
