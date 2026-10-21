@@ -1,6 +1,6 @@
 import { cacheLife } from "next/cache";
 import { getPsnStats } from "@/lib/gaming/psn";
-import { snapshot } from "@/lib/gaming/shared";
+import { describeError, snapshot } from "@/lib/gaming/shared";
 import { getSteamStats } from "@/lib/gaming/steam";
 import type { Aggregate, PlatformId, PlatformStats } from "@/lib/gaming/types";
 import { getXboxStats } from "@/lib/gaming/xbox";
@@ -13,7 +13,7 @@ export interface TrophyCase {
 const ORDER: PlatformId[] = ["steam", "xbox", "psn"];
 
 function warnAndSnapshot(id: PlatformId, error: unknown): PlatformStats {
-  console.warn(`[${id}] adapter threw: ${error instanceof Error ? error.message : String(error)}`);
+  console.warn(`[${id}] adapter threw: ${describeError(error)}`);
   return snapshot(id);
 }
 

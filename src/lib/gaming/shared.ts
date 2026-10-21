@@ -32,15 +32,63 @@ export function asString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-/** GET a JSON endpoint. Throws with status only, never with the URL (it may carry a key). */
+const EXCERPT_CHARS = 120;
+
+/** First characters of a body, whitespace collapsed, with any secret replaced. */
+export function excerpt(text: string, secrets: (string | undefined)[] = []): string {
+  let out = text;
+  for (const secret of secrets) {
+    if (secret) out = out.replaceAll(secret, "[redacted]");
+  }
+  return out.replace(/\s+/g, " ").slice(0, EXCERPT_CHARS);
+}
+
+/** A failed HTTP call: endpoint name, status and a redacted body excerpt. Never the URL or headers. */
+export class HttpError extends Error {
+  readonly status: number;
+  readonly excerpt: string;
+
+  constructor(label: string, status: number, bodyExcerpt: string) {
+    super(`${label} responded ${status}: ${bodyExcerpt}`);
+    this.name = "HttpError";
+    this.status = status;
+    this.excerpt = bodyExcerpt;
+  }
+}
+
+/**
+ * GET a JSON endpoint. `label` names the endpoint for warnings; `secrets` are
+ * redacted from any body excerpt. The URL is never part of an error.
+ */
 export async function fetchJson(
   url: string,
   init: RequestInit,
   label: string,
+  secrets: (string | undefined)[] = [],
 ): Promise<unknown> {
   const res = await fetch(url, init);
-  if (!res.ok) throw new Error(`${label} responded ${res.status}`);
-  return res.json() as Promise<unknown>;
+  const text = await res.text();
+  if (!res.ok) throw new HttpError(label, res.status, excerpt(text, secrets));
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new HttpError(label, res.status, `non-JSON body: ${excerpt(text, secrets)}`);
+  }
+}
+
+/** One-line description of any thrown value for a warning, with secrets redacted. */
+export function describeError(error: unknown, secrets: (string | undefined)[] = []): string {
+  if (error instanceof HttpError) return excerpt(error.message, secrets);
+  if (isRecord(error)) {
+    const status =
+      asNumber(error.status) ??
+      asNumber(error.statusCode) ??
+      (isRecord(error.response) ? asNumber(error.response.status) : undefined);
+    const message = asString(error.message) ?? "unknown error";
+    const text = status === undefined ? message : `status ${status}: ${message}`;
+    return excerpt(text, secrets);
+  }
+  return excerpt(String(error), secrets);
 }
 
 export function formatCount(value: number): string {

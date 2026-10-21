@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 import {
   asNumber,
   asString,
+  describeError,
   fetchJson,
   formatCount,
   isRecord,
@@ -67,7 +68,8 @@ export async function getSteamStats(): Promise<PlatformStats> {
       fetchJson(
         steamUrl("/ISteamUser/GetPlayerSummaries/v2/", { key, steamids: steamId }),
         {},
-        "[steam] player summary",
+        "GetPlayerSummaries",
+        [key],
       ),
       fetchJson(
         steamUrl("/IPlayerService/GetOwnedGames/v1/", {
@@ -76,7 +78,8 @@ export async function getSteamStats(): Promise<PlatformStats> {
           include_appinfo: "1",
         }),
         {},
-        "[steam] owned games",
+        "GetOwnedGames",
+        [key],
       ),
       fetchJson(
         steamUrl("/IPlayerService/GetRecentlyPlayedGames/v1/", {
@@ -85,7 +88,8 @@ export async function getSteamStats(): Promise<PlatformStats> {
           count: String(RECENT_COUNT),
         }),
         {},
-        "[steam] recently played",
+        "GetRecentlyPlayedGames",
+        [key],
       ),
     ]);
 
@@ -157,7 +161,7 @@ export async function getSteamStats(): Promise<PlatformStats> {
       fetchedAt: nowIso(),
     };
   } catch (error) {
-    console.warn(`[steam] falling back to snapshot: ${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`[steam] falling back to snapshot: ${describeError(error, [key])}`);
     return snapshot("steam");
   }
 }

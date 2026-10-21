@@ -8,7 +8,7 @@ import {
   type AuthTokensResponse,
 } from "psn-api";
 import { env } from "@/lib/env";
-import { formatCount, nowIso, safeImage, snapshot } from "@/lib/gaming/shared";
+import { asNumber, describeError, formatCount, isRecord, nowIso, safeImage, snapshot } from "@/lib/gaming/shared";
 import type { GameEntry, PlatformStats } from "@/lib/gaming/types";
 
 const RECENT_COUNT = 5;
@@ -66,8 +66,8 @@ export async function getPsnStats(): Promise<PlatformStats> {
   let auth: AuthorizationPayload;
   try {
     auth = await authorize(npsso);
-  } catch {
-    console.warn(AUTH_FAILED);
+  } catch (error) {
+    console.warn(`${AUTH_FAILED} (${describeError(error, [npsso])})`);
     return snapshot("psn");
   }
 
@@ -101,15 +101,12 @@ export async function getPsnStats(): Promise<PlatformStats> {
       fetchedAt: nowIso(),
     };
   } catch (error) {
-    const status =
-      typeof error === "object" && error !== null && "status" in error
-        ? Number((error as { status: unknown }).status)
-        : undefined;
+    const status = isRecord(error) ? asNumber(error.status) : undefined;
     if (status === 401 || status === 403) {
       tokens = undefined;
-      console.warn(AUTH_FAILED);
+      console.warn(`${AUTH_FAILED} (${describeError(error, [npsso])})`);
     } else {
-      console.warn(`[psn] falling back to snapshot: ${error instanceof Error ? error.message : String(error)}`);
+      console.warn(`[psn] falling back to snapshot: ${describeError(error, [npsso])}`);
     }
     return snapshot("psn");
   }

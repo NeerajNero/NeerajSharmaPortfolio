@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 import {
   asNumber,
   asString,
+  describeError,
   fetchJson,
   formatCount,
   isRecord,
@@ -21,8 +22,14 @@ interface Title {
   progress?: number;
 }
 
-function readSettings(body: unknown): Map<string, string> {
+/** OpenXBL wraps every payload as { content: ..., code: ... }; accept both shapes. */
+function unwrap(body: unknown): unknown {
+  return isRecord(body) && isRecord(body.content) ? body.content : body;
+}
+
+function readSettings(raw: unknown): Map<string, string> {
   const settings = new Map<string, string>();
+  const body = unwrap(raw);
   if (!isRecord(body) || !Array.isArray(body.profileUsers)) return settings;
   const user = body.profileUsers[0];
   if (!isRecord(user) || !Array.isArray(user.settings)) return settings;
@@ -35,7 +42,8 @@ function readSettings(body: unknown): Map<string, string> {
   return settings;
 }
 
-function readTitles(body: unknown): Title[] {
+function readTitles(raw: unknown): Title[] {
+  const body = unwrap(raw);
   if (!isRecord(body) || !Array.isArray(body.titles)) return [];
   const titles: Title[] = [];
   for (const raw of body.titles) {
@@ -67,13 +75,14 @@ export async function getXboxStats(): Promise<PlatformStats> {
 
   try {
     const [accountBody, historyBody] = await Promise.all([
-      fetchJson(`${BASE}/account`, { headers }, "[xbox] account"),
-      fetchJson(`${BASE}/player/titleHistory`, { headers }, "[xbox] title history"),
+      fetchJson(`${BASE}/account`, { headers }, "account", [key]),
+      fetchJson(`${BASE}/player/titleHistory`, { headers }, "titleHistory", [key]),
     ]);
 
     const settings = readSettings(accountBody);
     const handle = settings.get("Gamertag") ?? snapshot("xbox").handle;
-    const gamerscore = Number(settings.get("Gamerscore") ?? 0) || 0;
+    const parsedScore = Number(settings.get("Gamerscore"));
+    const gamerscore = Number.isFinite(parsedScore) ? parsedScore : 0;
 
     const titles = readTitles(historyBody);
     const completions = titles.filter((t) => t.progress === 100).length;
@@ -101,7 +110,7 @@ export async function getXboxStats(): Promise<PlatformStats> {
       fetchedAt: nowIso(),
     };
   } catch (error) {
-    console.warn(`[xbox] falling back to snapshot: ${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`[xbox] falling back to snapshot: ${describeError(error, [key])}`);
     return snapshot("xbox");
   }
 }
